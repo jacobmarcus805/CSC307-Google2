@@ -12,9 +12,17 @@ function MyApp() {
     setCharacters(updated);
   }
 
+  // check response status, only then update the list if it is 201
   function updateList(person) { 
     postUser(person)
-      .then(() => setCharacters([...characters, person]))
+      .then((res) => {
+        if (res.status === 201) {
+          setCharacters([...characters, person])
+        }
+        else {
+          console.log("Failed to add user");
+        }
+      })
       .catch((error) => {
         console.log(error);
       })
