@@ -5,10 +5,10 @@ import Form from "./Form";
 function MyApp() {
   const [characters, setCharacters] = useState([]);
 
-  function removeOneCharacter(index) {
+  async function removeOneCharacter(index) {
     // call delete route
     const characterToRemove = characters[index];
-    fetch(`http://localhost:8000/users/${characterToRemove.id}`, {
+    await fetch(`http://localhost:8000/users/${characterToRemove.id}`, {
       method: "DELETE",
     })
 
