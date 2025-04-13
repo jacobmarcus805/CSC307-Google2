@@ -6,6 +6,10 @@ const port = 8000;
 app.use(cors());
 app.use(express.json());
 
+function generate_random_id() {
+  return Math.random().toString(36).substring(2, 9);
+}
+
 const users = {
   users_list: [
     {
@@ -81,6 +85,13 @@ const addUser = (user) => {
 
 app.post("/users", (req, res) => {
   const userToAdd = req.body;
+  // generate id for user
+  userToAdd["id"] = generate_random_id();
+  // ensure all fields are filled
+  if (userToAdd["name"] === undefined || userToAdd["job"] === undefined) {
+    res.status(400).send("Invalid request body.");
+    return;
+  }
   addUser(userToAdd);
   res.status(201).send();
 });
