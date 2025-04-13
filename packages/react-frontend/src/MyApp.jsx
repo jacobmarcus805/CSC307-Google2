@@ -6,9 +6,16 @@ function MyApp() {
   const [characters, setCharacters] = useState([]);
 
   function removeOneCharacter(index) {
+    // call delete route
+    const characterToRemove = characters[index];
+    fetch(`http://localhost:8000/users/${characterToRemove.id}`, {
+      method: "DELETE",
+    })
+
     const updated = characters.filter((character, i) => {
       return i !== index;
     });
+
     setCharacters(updated);
   }
 
