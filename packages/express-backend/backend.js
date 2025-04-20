@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import mongoose from "mongoose";
+import userModel from "./user";
 
 const app = express();
 const port = 8000;
@@ -45,43 +47,64 @@ app.get("/", (req, res) => {
 });
 
 const findUserByName = (name) => {
-  return users["users_list"].filter((user) => user["name"] === name);
+  return userModel.find({ name: name });
 };
+
+const findUserByJob = (job) => {
+  return userModel.find({ job: job });
+};
+
+const findUserById = (id) => {
+  return userModel.findById(id);
+};
+
+function addUser(user) {
+  const userToAdd = new userModel(user);
+  const promise = userToAdd.save();
+  return promise;
+}
 
 app.get("/users", (req, res) => {
   const name = req.query.name;
   const job = req.query.job;
-  if (job != undefined && name != undefined) {
-    let result = findUserByName(name);
-    result = result.filter((user) => user["job"] === job);
-    result = { users_list: result };
-    res.send(result);
-  } else if (name != undefined) {
-    let result = findUserByName(name);
-    result = { users_list: result };
-    res.send(result);
-  } else {
-    res.send(users);
+
+  let promise;
+  if (name == undefined && job == undefined) {
+    promise = userModel.find();
+  } else if (name && !job) {
+    promise = findUserByName(name);
+  } else if (job && !name) {
+    promise = fundUserByJob(job);
+  }
+
+  if (promise) {
+    promise
+      .then((result) => {
+        res.send(result);
+      })
+      .catch((error) => {
+        res.status(500).send("Internal server error.");
+      });
+    return;
   }
 });
-
-const findUserById = (id) =>
-  users["users_list"].find((user) => user["id"] === id);
 
 app.get("/users/:id", (req, res) => {
   const id = req.params["id"];
   let result = findUserById(id);
-  if (result === undefined) {
-    res.status(404).send("Resource not found.");
-  } else {
-    res.send(result);
-  }
-});
 
-const addUser = (user) => {
-  users["users_list"].push(user);
-  return user;
-};
+  result
+    .then((user) => {
+      if (user) {
+        res.send(user);
+      } else {
+        res.status(404).send("Resource not found.");
+      }
+    })
+    .catch((error) => {
+      res.status(500).send("Internal server error.");
+    });
+});
 
 app.post("/users", (req, res) => {
   const userToAdd = req.body;
@@ -92,21 +115,31 @@ app.post("/users", (req, res) => {
     res.status(400).send("Invalid request body.");
     return;
   }
-  addUser(userToAdd);
-  res.status(201).send();
+  addUser(userToAdd)
+    .then(() => {
+      res.status(201).send();
+    })
+    .catch((error) => {
+      res.status(500).send("Internal server error.");
+    });
 });
 
 app.delete("/users/:id", (req, res) => {
   const id = req.params["id"];
-  const index = users["users_list"].findIndex((user) => user["id"] === id);
-  if (index === -1) {
-    res.status(404).send("Resource not found.");
-  } else {
-    users["users_list"].splice(index, 1);
-    res.status(204).send();
-  }
-});
 
+  userModel
+    .findByIdAndDelete(id)
+    .then((result) => {
+      if (result) {
+        res.status(204).send();
+      } else {
+        res.status(404).send("Resource not found.");
+      }
+    })
+    .catch((error) => {
+      res.status(500).send("Internal server error.");
+    });
+});
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
