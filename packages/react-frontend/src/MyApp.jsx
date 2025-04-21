@@ -8,7 +8,7 @@ function MyApp() {
   async function removeOneCharacter(index) {
     // call delete route
     const characterToRemove = characters[index];
-    await fetch(`http://localhost:8000/users/${characterToRemove.id}`, {
+    await fetch(`http://localhost:8000/users/${characterToRemove._id}`, {
       method: "DELETE",
     })
 
