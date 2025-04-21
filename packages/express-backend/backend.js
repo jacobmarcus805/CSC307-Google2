@@ -1,7 +1,10 @@
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import userModel from "./user";
+import userModel from "./user.js";
+import userServices from "./user-services.js";
+
+
 
 const app = express();
 const port = 8000;
@@ -12,51 +15,11 @@ function generate_random_id() {
   return Math.random().toString(36).substring(2, 9);
 }
 
-const users = {
-  users_list: [
-    {
-      id: "xyz789",
-      name: "Charlie",
-      job: "Janitor",
-    },
-    {
-      id: "abc123",
-      name: "Mac",
-      job: "Bouncer",
-    },
-    {
-      id: "ppp222",
-      name: "Mac",
-      job: "Professor",
-    },
-    {
-      id: "yat999",
-      name: "Dee",
-      job: "Aspring actress",
-    },
-    {
-      id: "zap555",
-      name: "Dennis",
-      job: "Bartender",
-    },
-  ],
-};
-
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-const findUserByName = (name) => {
-  return userModel.find({ name: name });
-};
 
-const findUserByJob = (job) => {
-  return userModel.find({ job: job });
-};
-
-const findUserById = (id) => {
-  return userModel.findById(id);
-};
 
 function addUser(user) {
   const userToAdd = new userModel(user);
@@ -67,31 +30,41 @@ function addUser(user) {
 app.get("/users", (req, res) => {
   const name = req.query.name;
   const job = req.query.job;
+  console.log(`name: ${name}, job: ${job}`);
 
   let promise;
   if (name == undefined && job == undefined) {
+    console.log("No query parameters provided, returning all users.");
     promise = userModel.find();
   } else if (name && !job) {
-    promise = findUserByName(name);
+    promise = userServices.findUserByName(name);
   } else if (job && !name) {
-    promise = fundUserByJob(job);
+    promise = userServices.findUserByJob(job);
+  }
+  else {
+    promise = userModel.find({ name: name, job: job });
   }
 
-  if (promise) {
-    promise
-      .then((result) => {
-        res.send(result);
-      })
-      .catch((error) => {
-        res.status(500).send("Internal server error.");
-      });
-    return;
-  }
+  // send results
+  promise
+    .then((users) => {
+      if (users.length > 0) {
+        res.send({ users_list: users });
+      } else {
+        res.status(404).send("No users found.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching users:", error);
+      res.status(500).send("Internal server error.");
+    });
+
+  return;
 });
 
 app.get("/users/:id", (req, res) => {
   const id = req.params["id"];
-  let result = findUserById(id);
+  let result = userServices.findUserById(id);
 
   result
     .then((user) => {
@@ -107,20 +80,22 @@ app.get("/users/:id", (req, res) => {
 });
 
 app.post("/users", (req, res) => {
+  console.log("Received request to add user:", req.body);
   const userToAdd = req.body;
-  // generate id for user
-  userToAdd["id"] = generate_random_id();
+
   // ensure all fields are filled
   if (userToAdd["name"] === undefined || userToAdd["job"] === undefined) {
     res.status(400).send("Invalid request body.");
     return;
   }
+  console.log("Adding user:", userToAdd);
   addUser(userToAdd)
     .then(() => {
       res.status(201).send();
     })
     .catch((error) => {
       res.status(500).send("Internal server error.");
+      console.error("Error adding user:", error);
     });
 });
 
