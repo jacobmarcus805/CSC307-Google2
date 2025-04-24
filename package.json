@@ -11,5 +11,11 @@
   "description": "",
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  },
+  "dependencies": {
+    "mongoose": "^8.13.2"
+  }
 }
