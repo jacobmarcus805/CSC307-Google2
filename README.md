@@ -1,4 +1,15 @@
-Google 2 Project Page
+# 307 Quarter Project
+
+### Purpose
+
+TBD..
+
+### Team
+
+Travis Biehle
+Nolan Knievel
+Jacob Marcus
+Josh Frendburg
 
 Contributing:
 Please use the AirBNB React/Javascript styleguide when making contributions
