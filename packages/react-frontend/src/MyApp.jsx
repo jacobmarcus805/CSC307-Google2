@@ -10,7 +10,7 @@ function MyApp() {
     const characterToRemove = characters[index];
     await fetch(`http://localhost:8000/users/${characterToRemove._id}`, {
       method: "DELETE",
-    })
+    });
 
     const updated = characters.filter((character, i) => {
       return i !== index;
@@ -20,20 +20,19 @@ function MyApp() {
   }
 
   // check response status, only then update the list if it is 201
-  function updateList(person) { 
+  function updateList(person) {
     postUser(person)
       .then((res) => {
         if (res.status === 201) {
-          setCharacters([...characters, person])
-        }
-        else {
+          setCharacters([...characters, person]);
+        } else {
           console.log("Failed to add user");
         }
       })
       .catch((error) => {
         console.log(error);
-      })
-}
+      });
+  }
 
   function fetchUsers() {
     const promise = fetch("http://localhost:8000/users");

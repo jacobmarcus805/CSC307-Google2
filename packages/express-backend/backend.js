@@ -4,8 +4,6 @@ import mongoose from "mongoose";
 import userModel from "./user.js";
 import userServices from "./user-services.js";
 
-
-
 const app = express();
 const port = 8000;
 app.use(cors());
@@ -18,8 +16,6 @@ function generate_random_id() {
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
-
-
 
 function addUser(user) {
   const userToAdd = new userModel(user);
@@ -40,8 +36,7 @@ app.get("/users", (req, res) => {
     promise = userServices.findUserByName(name);
   } else if (job && !name) {
     promise = userServices.findUserByJob(job);
-  }
-  else {
+  } else {
     promise = userModel.find({ name: name, job: job });
   }
 
