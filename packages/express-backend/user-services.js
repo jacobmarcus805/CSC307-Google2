@@ -1,16 +1,20 @@
 import mongoose from "mongoose";
 import userModel from "./user.js";
+import dotenv from "dotenv";
+
+dotenv.config(); // Load environment variables
 
 mongoose.set("debug", true);
+console.log("mongo uri: ", process.env.MONGODB_URI);
 
 mongoose
-  .connect("mongodb://localhost:27017/users", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .catch((error) => console.log(error));
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((error) => console.error("MongoDB connection error:", error));
 
-function getUsers(name, job) {
+
+
+  function getUsers(name, job) {
   let promise;
   if (name === undefined && job === undefined) {
     promise = userModel.find();
