@@ -12,9 +12,7 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
-
-
-  function getUsers(name, job) {
+function getUsers(name, job) {
   let promise;
   if (name === undefined && job === undefined) {
     promise = userModel.find();

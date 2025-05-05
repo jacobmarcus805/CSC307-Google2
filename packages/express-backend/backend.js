@@ -2,7 +2,9 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import userModel from "./user.js";
+import groupModel from "./group.js";
 import userServices from "./user-services.js";
+import groupServices from "./api/group-services.js";
 
 const app = express();
 const port = 8000;
@@ -110,6 +112,33 @@ app.delete("/users/:id", (req, res) => {
       res.status(500).send("Internal server error.");
     });
 });
+
+// GROUP routes
+app.post("/groups", (req, res) => {
+  console.log("Received request to add group:", req.body);
+  const groupToAdd = req.body;
+
+  // ensure all fields are filled
+  if (
+    groupToAdd["name"] === undefined ||
+    groupToAdd["description"] === undefined ||
+    groupToAdd["admins"] === undefined ||
+    groupToAdd["members"] === undefined
+  ) {
+    res.status(400).send("Invalid request body.");
+    return;
+  }
+  console.log("Adding group:", groupToAdd);
+  addGroup(groupToAdd)
+    .then(() => {
+      res.status(201).send();
+    })
+    .catch((error) => {
+      res.status(500).send("Internal server error.");
+      console.error("Error adding group:", error);
+    });
+});
+
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });

@@ -8,7 +8,7 @@ const groupSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: false,
+    required: true,
     trim: false,
   },
   admins: [
@@ -27,6 +27,6 @@ const groupSchema = new mongoose.Schema({
   ],
 });
 
-const Group = mongoose.model("Group", groupSchema);
+const groupModel = mongoose.model("Group", groupSchema);
 
-export default Group;
+export default groupModel;
