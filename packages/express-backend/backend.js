@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import userModel from "./user.js";
-import groupModel from "./api/group.js";
+import groupModel from "./schemas/group.js";
 import userServices from "./user-services.js";
 import groupServices from "./api/group-services.js";
 import dotenv from "dotenv";

@@ -1,5 +1,5 @@
 import { mongoose } from "mongoose";
-import Group from "./group.js";
+import Group from "../schemas/group.js";
 import dotenv from "dotenv";
 
 function addGroup(group) {
