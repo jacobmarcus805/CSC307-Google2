@@ -5,11 +5,22 @@ import userModel from "./user.js";
 import groupModel from "./api/group.js";
 import userServices from "./user-services.js";
 import groupServices from "./api/group-services.js";
+import dotenv from "dotenv";
 
 const app = express();
 const port = 8000;
 app.use(cors());
 app.use(express.json());
+
+dotenv.config(); // Load environment variables
+
+mongoose.set("debug", true);
+console.log("mongo uri: ", process.env.MONGODB_URI);
+
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((error) => console.error("MongoDB connection error:", error));
 
 function generate_random_id() {
   return Math.random().toString(36).substring(2, 9);
@@ -139,6 +150,6 @@ app.post("/groups", (req, res) => {
     });
 });
 
-app.listen(port, () => {
+app.listen(port, (req, res) => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
