@@ -1,5 +1,5 @@
 import { mongoose } from "mongoose";
-import groupModel from "./group.js";
+import Group from "./group.js";
 import dotenv from "dotenv";
 
 dotenv.config(); // Load environment variables
@@ -13,7 +13,7 @@ mongoose
   .catch((error) => console.error("MongoDB connection error:", error));
 
 function addGroup(group) {
-  const groupToAdd = new groupModel(group);
+  const groupToAdd = new Group(group);
   const promise = groupToAdd.save();
   return promise;
 }
