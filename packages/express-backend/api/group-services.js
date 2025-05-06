@@ -19,7 +19,5 @@ function addGroup(group) {
 }
 
 export default {
-  findGroupById,
-  getGroupByName,
   addGroup,
 };
