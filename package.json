@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npm run dev --workspace react-frontend",
-    "prepare": "husky"
+    "prepare": "husky install"
   },
   "author": "",
   "license": "ISC",
@@ -30,6 +30,6 @@
     "mongoose": "^8.13.2"
   },
   "lint-staged": {
-    "**/*": "prettier --write --ignore-unknown"
+    "*.{js,jsx,ts,tsx,json,css,md}": "prettier --write"
   }
 }

@@ -140,7 +140,8 @@ app.post("/groups", (req, res) => {
     return;
   }
   console.log("Adding group:", groupToAdd);
-  groupServices.addGroup(groupToAdd)
+  groupServices
+    .addGroup(groupToAdd)
     .then(() => {
       res.status(201).send();
     })
@@ -153,3 +154,5 @@ app.post("/groups", (req, res) => {
 app.listen(port, (req, res) => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
+
+// some changes
