@@ -140,7 +140,8 @@ app.post("/groups", (req, res) => {
     return;
   }
   console.log("Adding group:", groupToAdd);
-  groupServices.addGroup(groupToAdd)
+  groupServices
+    .addGroup(groupToAdd)
     .then(() => {
       res.status(201).send();
     })
