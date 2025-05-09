@@ -154,5 +154,3 @@ app.post("/groups", (req, res) => {
 app.listen(port, (req, res) => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
-
-// some changes
