@@ -37,21 +37,8 @@ function addUser(user) {
 }
 
 app.get("/users", (req, res) => {
-  const name = req.query.name;
-  const job = req.query.job;
-  console.log(`name: ${name}, job: ${job}`);
-
   let promise;
-  if (name == undefined && job == undefined) {
-    console.log("No query parameters provided, returning all users.");
-    promise = userModel.find();
-  } else if (name && !job) {
-    promise = userServices.findUserByName(name);
-  } else if (job && !name) {
-    promise = userServices.findUserByJob(job);
-  } else {
-    promise = userModel.find({ name: name, job: job });
-  }
+  promise = userModel.find();
 
   // send results
   promise
@@ -92,7 +79,11 @@ app.post("/users", (req, res) => {
   const userToAdd = req.body;
 
   // ensure all fields are filled
-  if (userToAdd["name"] === undefined || userToAdd["job"] === undefined) {
+  if (
+    userToAdd["name"] === undefined ||
+    userToAdd["email"] === undefined ||
+    userToAdd["password"] === undefined
+  ) {
     res.status(400).send("Invalid request body.");
     return;
   }

@@ -7,15 +7,9 @@ dotenv.config(); // Load environment variables
 mongoose.set("debug", true);
 console.log("mongo uri: ", process.env.MONGODB_URI);
 
-function getUsers(name, job) {
+function getUsers() {
   let promise;
-  if (name === undefined && job === undefined) {
-    promise = userModel.find();
-  } else if (name && !job) {
-    promise = findUserByName(name);
-  } else if (job && !name) {
-    promise = findUserByJob(job);
-  }
+  promise = userModel.find();
   return promise;
 }
 
