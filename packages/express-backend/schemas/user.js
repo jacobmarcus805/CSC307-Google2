@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const UserSchema = new mongoose.Schema(
   {
@@ -7,15 +7,41 @@ const UserSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    job: {
+    email: {
       type: String,
       required: true,
       trim: true,
       validate(value) {
         if (value.length < 2)
-          throw new Error("Invalid job, must be at least 2 characters.");
+          throw new Error("Invalid email, must be at least 2 characters.");
       },
     },
+    password: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    schedule: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Event",
+        required: true,
+      },
+    ],
+    groups_in: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Group",
+        required: true,
+      },
+    ],
+    groups_created: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Group",
+        required: true,
+      },
+    ],
   },
   { collection: "users_list" },
 );
