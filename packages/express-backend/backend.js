@@ -42,9 +42,9 @@ app.get("/users", (req, res) => {
 
   // send results
   promise
-    .then((users) => {
-      if (users.length > 0) {
-        res.send({ users_list: users });
+    .then((found_users) => {
+      if (found_users.length > 0) {
+        res.send({ users: found_users });
       } else {
         res.status(404).send("No users found.");
       }
