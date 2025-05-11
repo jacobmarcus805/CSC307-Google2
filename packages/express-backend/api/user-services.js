@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import userModel from "./user.js";
+import userModel from "../schemas/user.js";
 import dotenv from "dotenv";
 
 dotenv.config(); // Load environment variables
