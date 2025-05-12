@@ -1,5 +1,5 @@
 import { mongoose } from "mongoose";
-import Group from "../schemas/group.js";
+import groupModel from "../schemas/group.js";
 import dotenv from "dotenv";
 
 function addGroup(group) {
@@ -8,6 +8,18 @@ function addGroup(group) {
   return promise;
 }
 
+function findGroupById(id) {
+  return groupModel.findGroupById(id);
+}
+
+function updateGroupById(id, update) {
+  let promise;
+  promise = groupModel.findByIdAndUpdate(id, update);
+  return promise;
+}
+
 export default {
   addGroup,
+  findGroupById,
+  updateGroupById,
 };

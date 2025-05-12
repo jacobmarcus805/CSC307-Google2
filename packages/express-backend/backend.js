@@ -151,6 +151,22 @@ app.post("/groups", (req, res) => {
     });
 });
 
+app.patch("/groups/:id", (req, res) => {
+  const { id } = req.params;
+  const update = req.body;
+
+  groupServices
+    .updateGroupById(id, update)
+    .then(() => {
+      console.log("patching group");
+      res.status(200).send();
+    })
+    .catch((error) => {
+      res.status(500).send("Internal server error.");
+      console.error("Error patching user:", error);
+    });
+});
+
 app.listen(port, (req, res) => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
