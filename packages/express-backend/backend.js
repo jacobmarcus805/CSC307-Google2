@@ -167,6 +167,38 @@ app.patch("/groups/:id", (req, res) => {
     });
 });
 
+app.get("/groups", (req, res) => {
+  const name = req.query.name;
+
+  groupServices
+    .getGroups(name)
+    .then((groups) => {
+      if (groups.length > 0) {
+        res.send({ groups_list: groups });
+      } else {
+        res.status(404).send("No groups found.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching groups: ", error);
+      res.status(500).send("Internal server error");
+    });
+});
+
+app.get("/groups/:id", (req, res) => {
+  const { id } = req.params;
+
+  groupServices
+    .findGroupById(id)
+    .then((group) => {
+      res.send(group);
+    })
+    .catch((error) => {
+      console.error("Error fetching group: ", error);
+      res.status(500).send();
+    });
+});
+
 app.listen(port, (req, res) => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
