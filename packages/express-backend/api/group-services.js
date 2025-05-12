@@ -3,13 +3,13 @@ import groupModel from "../schemas/group.js";
 import dotenv from "dotenv";
 
 function addGroup(group) {
-  const groupToAdd = new Group(group);
+  const groupToAdd = new groupModel(group);
   const promise = groupToAdd.save();
   return promise;
 }
 
 function findGroupById(id) {
-  return groupModel.findGroupById(id);
+  return groupModel.findById(id);
 }
 
 function updateGroupById(id, update) {
@@ -18,8 +18,20 @@ function updateGroupById(id, update) {
   return promise;
 }
 
+function getGroups(name) {
+  let promise;
+  if (name == undefined) {
+    promise = groupModel.find();
+  } else {
+    promise = groupModel.find({ name: name });
+  }
+
+  return promise;
+}
+
 export default {
   addGroup,
   findGroupById,
   updateGroupById,
+  getGroups,
 };
