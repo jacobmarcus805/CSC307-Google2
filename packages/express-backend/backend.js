@@ -3,8 +3,10 @@ import cors from "cors";
 import mongoose from "mongoose";
 import userModel from "./schemas/user.js";
 import groupModel from "./schemas/group.js";
+import Event from "./schemas/event.js";
 import userServices from "./api/user-services.js";
 import groupServices from "./api/group-services.js";
+import eventServices from "./api/event-services.js";
 import dotenv from "dotenv";
 
 const app = express();
