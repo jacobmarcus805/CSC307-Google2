@@ -199,6 +199,53 @@ app.get("/groups/:id", (req, res) => {
     });
 });
 
+//EVENT routes
+app.post("/events", (req, res) => {
+  console.log("Received request to add event:", req.body);
+  const eventToAdd = req.body;
+
+  // ensure all fields are filled
+  if (
+    eventToAdd["title"] === undefined ||
+    eventToAdd["day"] === undefined ||
+    eventToAdd["startTime"] === undefined ||
+    eventToAdd["endTime"] === undefined ||
+    eventToAdd["location"] === undefined ||
+    eventToAdd["canSit"] === undefined
+  ) {
+    res.status(400).send("Invalid request body.");
+    return;
+  }
+  console.log("Adding event:", eventToAdd);
+  eventServices
+    .addEvent(eventToAdd)
+    .then(() => {
+      res.status(201).send();
+    })
+    .catch((error) => {
+      res.status(500).send("Internal server error.");
+      console.error("Error adding event:", error);
+    });
+});
+
+app.get("/events", (req, res) => {
+  const title = req.query.title;
+
+  eventServices
+    .getEvents(title)
+    .then((events) => {
+      if (events.length > 0) {
+        res.send({ events_list: events });
+      } else {
+        res.status(404).send("No events found.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching events: ", error);
+      res.status(500).send("Internal server error");
+    });
+});
+
 app.listen(port, (req, res) => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
