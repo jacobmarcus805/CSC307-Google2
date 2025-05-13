@@ -17,8 +17,19 @@ function getEvents(title) {
 
   return promise;
 }
+function findEventById(id) {
+  return eventModel.findById(id);
+}
+
+function updateEventById(id, update) {
+  let promise;
+  promise = eventModel.findByIdAndUpdate(id, update);
+  return promise;
+}
 
 export default {
   addEvent,
   getEvents,
+  updateEventById,
+  findEventById,
 };
