@@ -9,6 +9,8 @@ import dotenv from "dotenv";
 import eventModel from "./schemas/event.js";
 import eventServices from "./api/event-services.js";
 
+// Testing yo
+
 const app = express();
 const port = 8000;
 app.use(cors());
