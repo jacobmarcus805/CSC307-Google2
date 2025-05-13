@@ -16,12 +16,13 @@ import {
   FormHelperText,
   InputRightElement,
 } from "@chakra-ui/react";
-import { FaUserAlt, FaLock } from "react-icons/fa";
+import { FaUserAlt, FaLock, FaArrowLeft } from "react-icons/fa";
 
 const CFaUserAlt = chakra(FaUserAlt);
 const CFaLock = chakra(FaLock);
+const CFaArrowLeft = chakra(FaArrowLeft);
 
-function Login() {
+function Signup() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleShowClick = () => setShowPassword(!showPassword);
@@ -86,20 +87,24 @@ function Login() {
                 color="white"
                 width="full"
               >
-                Login
+                Sign Up
               </Button>
             </Stack>
           </form>
         </Box>
       </Stack>
       <Box>
-        New to us?{" "}
-        <Link color="green.700" href="/signup">
-          Sign Up
+        <Link
+          color="green.700"
+          href="/login"
+          display="flex"
+          alignItems="center"
+        >
+          <CFaArrowLeft /> Back to Login
         </Link>
       </Box>
     </Flex>
   );
 }
 
-export default Login;
+export default Signup;
