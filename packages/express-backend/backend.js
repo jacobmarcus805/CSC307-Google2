@@ -1,11 +1,15 @@
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import userModel from "./user.js";
+import userModel from "./schemas/user.js";
 import groupModel from "./schemas/group.js";
-import userServices from "./user-services.js";
+import userServices from "./api/user-services.js";
 import groupServices from "./api/group-services.js";
 import dotenv from "dotenv";
+import eventModel from "./schemas/event.js";
+import eventServices from "./api/event-services.js";
+
+// Testing yo
 
 const app = express();
 const port = 8000;
@@ -37,27 +41,14 @@ function addUser(user) {
 }
 
 app.get("/users", (req, res) => {
-  const name = req.query.name;
-  const job = req.query.job;
-  console.log(`name: ${name}, job: ${job}`);
-
   let promise;
-  if (name == undefined && job == undefined) {
-    console.log("No query parameters provided, returning all users.");
-    promise = userModel.find();
-  } else if (name && !job) {
-    promise = userServices.findUserByName(name);
-  } else if (job && !name) {
-    promise = userServices.findUserByJob(job);
-  } else {
-    promise = userModel.find({ name: name, job: job });
-  }
+  promise = userModel.find();
 
   // send results
   promise
-    .then((users) => {
-      if (users.length > 0) {
-        res.send({ users_list: users });
+    .then((found_users) => {
+      if (found_users.length > 0) {
+        res.send({ users: found_users });
       } else {
         res.status(404).send("No users found.");
       }
@@ -92,7 +83,11 @@ app.post("/users", (req, res) => {
   const userToAdd = req.body;
 
   // ensure all fields are filled
-  if (userToAdd["name"] === undefined || userToAdd["job"] === undefined) {
+  if (
+    userToAdd["name"] === undefined ||
+    userToAdd["email"] === undefined ||
+    userToAdd["password"] === undefined
+  ) {
     res.status(400).send("Invalid request body.");
     return;
   }
@@ -195,6 +190,83 @@ app.get("/groups/:id", (req, res) => {
     })
     .catch((error) => {
       console.error("Error fetching group: ", error);
+      res.status(500).send();
+    });
+});
+
+//EVENT routes
+app.post("/events", (req, res) => {
+  console.log("Received request to add event:", req.body);
+  const eventToAdd = req.body;
+
+  // ensure all fields are filled
+  if (
+    eventToAdd["title"] === undefined ||
+    eventToAdd["day"] === undefined ||
+    eventToAdd["startTime"] === undefined ||
+    eventToAdd["endTime"] === undefined ||
+    eventToAdd["location"] === undefined ||
+    eventToAdd["canSit"] === undefined
+  ) {
+    res.status(400).send("Invalid request body.");
+    return;
+  }
+  console.log("Adding event:", eventToAdd);
+  eventServices
+    .addEvent(eventToAdd)
+    .then(() => {
+      res.status(201).send();
+    })
+    .catch((error) => {
+      res.status(500).send("Internal server error.");
+      console.error("Error adding event:", error);
+    });
+});
+
+app.get("/events", (req, res) => {
+  const title = req.query.title;
+
+  eventServices
+    .getEvents(title)
+    .then((events) => {
+      if (events.length > 0) {
+        res.send({ events_list: events });
+      } else {
+        res.status(404).send("No events found.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching events: ", error);
+      res.status(500).send("Internal server error");
+    });
+});
+
+app.patch("/events/:id", (req, res) => {
+  const update = req.body;
+  const { id } = req.params;
+
+  eventServices
+    .updateEventById(id, update)
+    .then(() => {
+      console.log("patching event");
+      res.status(200).send();
+    })
+    .catch((error) => {
+      res.status(500).send("Internal server error.");
+      console.error("Error patching event:", error);
+    });
+});
+
+app.get("/events/:id", (req, res) => {
+  const { id } = req.params;
+
+  eventServices
+    .findEventById(id)
+    .then((event) => {
+      res.send(event);
+    })
+    .catch((error) => {
+      console.error("Error fetching event: ", error);
       res.status(500).send();
     });
 });
