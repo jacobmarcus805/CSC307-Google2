@@ -6,6 +6,8 @@ import groupModel from "./schemas/group.js";
 import userServices from "./api/user-services.js";
 import groupServices from "./api/group-services.js";
 import dotenv from "dotenv";
+import eventModel from "./schemas/event.js";
+import eventServices from "./api/event-services.js";
 
 const app = express();
 const port = 8000;
@@ -234,6 +236,36 @@ app.get("/events", (req, res) => {
     .catch((error) => {
       console.error("Error fetching events: ", error);
       res.status(500).send("Internal server error");
+    });
+});
+
+app.patch("/events/:id", (req, res) => {
+  const update = req.body;
+  const { id } = req.params;
+
+  eventServices
+    .updateEventById(id, update)
+    .then(() => {
+      console.log("patching event");
+      res.status(200).send();
+    })
+    .catch((error) => {
+      res.status(500).send("Internal server error.");
+      console.error("Error patching event:", error);
+    });
+});
+
+app.get("/events/:id", (req, res) => {
+  const { id } = req.params;
+
+  eventServices
+    .findEventById(id)
+    .then((event) => {
+      res.send(event);
+    })
+    .catch((error) => {
+      console.error("Error fetching event: ", error);
+      res.status(500).send();
     });
 });
 
