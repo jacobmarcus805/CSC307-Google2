@@ -1,9 +1,9 @@
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import userModel from "./user.js";
+import userModel from "./schemas/user.js";
 import groupModel from "./schemas/group.js";
-import userServices from "./user-services.js";
+import userServices from "./api/user-services.js";
 import groupServices from "./api/group-services.js";
 import dotenv from "dotenv";
 
@@ -37,27 +37,14 @@ function addUser(user) {
 }
 
 app.get("/users", (req, res) => {
-  const name = req.query.name;
-  const job = req.query.job;
-  console.log(`name: ${name}, job: ${job}`);
-
   let promise;
-  if (name == undefined && job == undefined) {
-    console.log("No query parameters provided, returning all users.");
-    promise = userModel.find();
-  } else if (name && !job) {
-    promise = userServices.findUserByName(name);
-  } else if (job && !name) {
-    promise = userServices.findUserByJob(job);
-  } else {
-    promise = userModel.find({ name: name, job: job });
-  }
+  promise = userModel.find();
 
   // send results
   promise
-    .then((users) => {
-      if (users.length > 0) {
-        res.send({ users_list: users });
+    .then((found_users) => {
+      if (found_users.length > 0) {
+        res.send({ users: found_users });
       } else {
         res.status(404).send("No users found.");
       }
@@ -92,7 +79,11 @@ app.post("/users", (req, res) => {
   const userToAdd = req.body;
 
   // ensure all fields are filled
-  if (userToAdd["name"] === undefined || userToAdd["job"] === undefined) {
+  if (
+    userToAdd["name"] === undefined ||
+    userToAdd["email"] === undefined ||
+    userToAdd["password"] === undefined
+  ) {
     res.status(400).send("Invalid request body.");
     return;
   }
