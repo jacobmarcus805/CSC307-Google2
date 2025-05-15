@@ -29,7 +29,8 @@
   "dependencies": {
     "dotenv": "^16.5.0",
     "mongodb": "^6.16.0",
-    "mongoose": "^8.13.2"
+    "mongoose": "^8.13.2",
+    "node": "^20.19.2"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,css,md}": "prettier --write"
