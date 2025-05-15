@@ -31,10 +31,17 @@ function findUserByJob(job) {
   return userModel.find({ job: job });
 }
 
+function updateUserById(id, update) {
+  let promise;
+  promise = userModel.findByIdAndUpdate(id, update);
+  return promise;
+}
+
 export default {
   addUser,
   getUsers,
   findUserById,
   findUserByName,
   findUserByJob,
+  updateUserById,
 };

@@ -7,7 +7,6 @@ import userServices from "./api/user-services.js";
 import groupServices from "./api/group-services.js";
 import eventServices from "./api/event-services.js";
 import dotenv from "dotenv";
-import eventServices from "./api/event-services.js";
 
 // Testing yo
 
@@ -102,6 +101,22 @@ app.post("/users", (req, res) => {
     });
 });
 
+app.patch("/users/:id", (req, res) => {
+  const { id } = req.params;
+  const update = req.body;
+
+  userServices
+    .updateUserById(id, update)
+    .then(() => {
+      console.log("patching user");
+      res.status(200).send();
+    })
+    .catch((error) => {
+      es.status(500).send("Internal server error.");
+      console.error("Error patching user:", error);
+    });
+});
+
 app.delete("/users/:id", (req, res) => {
   const id = req.params["id"];
 
@@ -158,7 +173,7 @@ app.patch("/groups/:id", (req, res) => {
     })
     .catch((error) => {
       res.status(500).send("Internal server error.");
-      console.error("Error patching user:", error);
+      console.error("Error patching group:", error);
     });
 });
 
