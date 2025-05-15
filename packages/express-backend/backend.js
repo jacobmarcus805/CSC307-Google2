@@ -214,9 +214,13 @@ app.delete("/groups/:id", (req, res) => {
 
   groupServices
     .findByIdAndDelete(id)
-    .then(() => {
-      console.log("Deleteing user");
-      res.status(204).send();
+    .then((result) => {
+      if (result) {
+        console.log("Deleting group");
+        res.status(204).send();
+      } else {
+        res.status(404).send("Resource not found");
+      }
     })
     .catch((error) => {
       console.log("Error deleting user: ", error);
@@ -298,6 +302,25 @@ app.get("/events/:id", (req, res) => {
     .catch((error) => {
       console.error("Error fetching event: ", error);
       res.status(500).send();
+    });
+});
+
+app.delete("/events/:id", (req, res) => {
+  const { id } = req.params;
+
+  eventServices
+    .findEventByIdAndDelete(id)
+    .then((result) => {
+      if (result) {
+        console.log("Deleting event");
+        res.status(204).send();
+      } else {
+        res.status(404).send("Resource not found.");
+      }
+    })
+    .catch((error) => {
+      console.log("Error deleting event:", error);
+      res.status(500).send("Internal server error.");
     });
 });
 

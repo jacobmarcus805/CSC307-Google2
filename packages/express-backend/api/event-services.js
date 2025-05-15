@@ -27,9 +27,13 @@ function updateEventById(id, update) {
   return promise;
 }
 
+function findEventByIdAndDelete(id) {
+  return eventModel.findByIdAndDelete(id);
+}
 export default {
   addEvent,
   getEvents,
   updateEventById,
   findEventById,
+  findEventByIdAndDelete,
 };
