@@ -107,9 +107,13 @@ app.patch("/users/:id", (req, res) => {
 
   userServices
     .updateUserById(id, update)
-    .then(() => {
-      console.log("patching user");
-      res.status(200).send();
+    .then((result) => {
+      if (result) {
+        console.log("patching user");
+        res.status(200).send();
+      } else {
+        res.status(404).send("Resource not found.");
+      }
     })
     .catch((error) => {
       es.status(500).send("Internal server error.");
@@ -167,9 +171,13 @@ app.patch("/groups/:id", (req, res) => {
 
   groupServices
     .updateGroupById(id, update)
-    .then(() => {
-      console.log("patching group");
-      res.status(200).send();
+    .then((result) => {
+      if (result) {
+        console.log("patching group");
+        res.status(200).send();
+      } else {
+        res.status(404).send("Resource not found.");
+      }
     })
     .catch((error) => {
       res.status(500).send("Internal server error.");
@@ -281,9 +289,13 @@ app.patch("/events/:id", (req, res) => {
 
   eventServices
     .updateEventById(id, update)
-    .then(() => {
-      console.log("patching event");
-      res.status(200).send();
+    .then((result) => {
+      if (result) {
+        console.log("patching event");
+        res.status(200).send();
+      } else {
+        res.status(404).send("Resource not found.");
+      }
     })
     .catch((error) => {
       res.status(500).send("Internal server error.");
