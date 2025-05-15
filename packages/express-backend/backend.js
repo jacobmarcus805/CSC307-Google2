@@ -209,6 +209,21 @@ app.get("/groups/:id", (req, res) => {
     });
 });
 
+app.delete("/groups/:id", (req, res) => {
+  const { id } = req.params;
+
+  groupServices
+    .findByIdAndDelete(id)
+    .then(() => {
+      console.log("Deleteing user");
+      res.status(204).send();
+    })
+    .catch((error) => {
+      console.log("Error deleting user: ", error);
+      res.status(500).send("Internal server error.");
+    });
+});
+
 //EVENT routes
 app.post("/events", (req, res) => {
   console.log("Received request to add event:", req.body);
