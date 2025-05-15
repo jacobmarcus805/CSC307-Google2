@@ -16,6 +16,9 @@ export default defineConfig([
         process: "readonly",
       },
     },
+    rules: {
+      "no-unused-vars": "warn",
+    },
   },
   {
     files: ["**/*.{js,mjs,cjs,jsx}"],
