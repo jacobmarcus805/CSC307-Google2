@@ -10,8 +10,8 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-      <Route path="/schedule/:username" element={<Schedule />} />
-      <Route path="/groups/:username" element={<Groups />} />
+      <Route path="/:username/schedule" element={<Schedule />} />
+      <Route path="/username/:groups" element={<Groups />} />
     </Routes>
   );
 }
