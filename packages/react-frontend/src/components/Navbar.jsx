@@ -23,7 +23,7 @@ function Navbar() {
           {/* Schedule Button */}
           <Button
             as={RouterLink}
-            to="/schedule/username"
+            to="/username/schedule"
             colorScheme="green"
             variant="ghost"
             size="lg"
@@ -35,7 +35,7 @@ function Navbar() {
           {/* Groups Button */}
           <Button
             as={RouterLink}
-            to="/groups/username"
+            to="/username/groups"
             colorScheme="green"
             variant="ghost"
             size="lg"
