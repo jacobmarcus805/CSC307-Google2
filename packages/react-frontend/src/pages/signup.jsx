@@ -24,8 +24,29 @@ const CFaArrowLeft = chakra(FaArrowLeft);
 
 function Signup() {
   const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
   const handleShowClick = () => setShowPassword(!showPassword);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    // setLoading(true);
+    // setMessage("");
+
+    console.log("Sign up submitted");
+  };
 
   return (
     <Flex
@@ -58,7 +79,12 @@ function Signup() {
                     pointerEvents="none"
                     children={<CFaUserAlt color="gray.300" />}
                   />
-                  <Input type="email" placeholder="email address" />
+                  <Input
+                    type="email"
+                    placeholder="email address"
+                    name="email"
+                    onChange={handleChange}
+                  />
                 </InputGroup>
               </FormControl>
               <FormControl>
@@ -71,6 +97,8 @@ function Signup() {
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
+                    name="password"
+                    onChange={handleChange}
                   />
                   <InputRightElement width="4.5rem">
                     <Button h="1.75rem" size="sm" onClick={handleShowClick}>
