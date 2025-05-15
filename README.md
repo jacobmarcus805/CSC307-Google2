@@ -9,7 +9,7 @@ TBD..
 Travis Biehle
 Nolan Knievel
 Jacob Marcus
-Josh Frendburg
+Josh Frendberg
 
 Contributing:
 Please use the AirBNB React/Javascript styleguide when making contributions
