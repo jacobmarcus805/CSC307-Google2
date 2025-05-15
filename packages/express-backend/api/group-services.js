@@ -29,6 +29,10 @@ function getGroups(name) {
   return promise;
 }
 
+function findGroupByIdAndDelete(id) {
+  return groupModel.findByIdAndDelete(id);
+}
+
 export default {
   addGroup,
   findGroupById,
