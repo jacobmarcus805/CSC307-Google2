@@ -89,7 +89,13 @@ app.post("/users", (req, res) => {
   console.log("Adding user:", userToAdd);
   addUser(userToAdd)
     .then(() => {
-      res.status(201).send();
+      res.status(201).json({
+        message: "User created successfully",
+        user: {
+          name: userToAdd.name,
+          email: userToAdd.email,
+        },
+      });
     })
     .catch((error) => {
       res.status(500).send("Internal server error.");
