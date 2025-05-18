@@ -1,11 +1,4 @@
-import mongoose from "mongoose";
 import userModel from "../schemas/user.js";
-import dotenv from "dotenv";
-
-dotenv.config(); // Load environment variables
-
-mongoose.set("debug", true);
-console.log("mongo uri: ", process.env.MONGODB_URI);
 
 function getUsers() {
   let promise;

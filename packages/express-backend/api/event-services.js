@@ -1,4 +1,3 @@
-import { mongoose } from "mongoose";
 import eventModel from "../schemas/event.js";
 
 function addEvent(event) {
