@@ -1,5 +1,4 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Flex,
   Heading,
@@ -13,8 +12,8 @@ import {
   Link,
   Avatar,
   FormControl,
-  FormHelperText,
   InputRightElement,
+  Text,
 } from "@chakra-ui/react";
 import { FaUserAlt, FaLock, FaArrowLeft } from "react-icons/fa";
 
@@ -25,9 +24,13 @@ const CFaArrowLeft = chakra(FaArrowLeft);
 function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleShowClick = () => setShowPassword(!showPassword);
 
@@ -41,11 +44,51 @@ function Signup() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true);
+    setErrorMessage(""); // Clear any previous error messages
+    setSuccessMessage(""); // Clear any previous success messages
 
-    // setLoading(true);
-    // setMessage("");
+    const formattedData = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+    };
 
-    console.log("Sign up submitted");
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/users`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formattedData),
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to sign up");
+      }
+
+      const data = await response.json();
+      console.log("User created successfully:", data);
+
+      // Display success message
+      setSuccessMessage("User created successfully!");
+
+      // Clear the form on success
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+      });
+    } catch (error) {
+      console.error("Error during sign up:", error);
+      setErrorMessage(error.message || "An error occurred during sign up.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -66,7 +109,7 @@ function Signup() {
         <Avatar bg="green.700" />
         <Heading color="green.700">Welcome</Heading>
         <Box minW={{ base: "90%", md: "468px" }}>
-          <form>
+          <form onSubmit={handleSubmit}>
             <Stack
               spacing={4}
               p="1rem"
@@ -80,13 +123,31 @@ function Signup() {
                     children={<CFaUserAlt color="gray.300" />}
                   />
                   <Input
-                    type="email"
-                    placeholder="email address"
-                    name="email"
+                    type="text"
+                    placeholder="Name"
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
                   />
                 </InputGroup>
               </FormControl>
+
+              <FormControl>
+                <InputGroup>
+                  <InputLeftElement
+                    pointerEvents="none"
+                    children={<CFaUserAlt color="gray.300" />}
+                  />
+                  <Input
+                    type="email"
+                    placeholder="Email Address"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </InputGroup>
+              </FormControl>
+
               <FormControl>
                 <InputGroup>
                   <InputLeftElement
@@ -98,6 +159,7 @@ function Signup() {
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
                     name="password"
+                    value={formData.password}
                     onChange={handleChange}
                   />
                   <InputRightElement width="4.5rem">
@@ -107,6 +169,21 @@ function Signup() {
                   </InputRightElement>
                 </InputGroup>
               </FormControl>
+
+              {/* Display error message */}
+              {errorMessage && (
+                <Text color="red.500" textAlign="center">
+                  {errorMessage}
+                </Text>
+              )}
+
+              {/* Display success message */}
+              {successMessage && (
+                <Text color="green.500" textAlign="center">
+                  {successMessage}
+                </Text>
+              )}
+
               <Button
                 borderRadius={0}
                 type="submit"
@@ -114,6 +191,7 @@ function Signup() {
                 backgroundColor="green.700"
                 color="white"
                 width="full"
+                isLoading={loading} // Show loading spinner
               >
                 Sign Up
               </Button>
