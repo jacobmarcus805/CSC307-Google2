@@ -15,10 +15,9 @@ import {
   InputRightElement,
   Text,
 } from "@chakra-ui/react";
-import { FaUserAlt, FaLock, FaArrowLeft } from "react-icons/fa";
+import { FaUserAlt, FaArrowLeft } from "react-icons/fa";
 
 const CFaUserAlt = chakra(FaUserAlt);
-const CFaLock = chakra(FaLock);
 const CFaArrowLeft = chakra(FaArrowLeft);
 
 function Signup() {
@@ -118,10 +117,9 @@ function Signup() {
             >
               <FormControl>
                 <InputGroup>
-                  <InputLeftElement
-                    pointerEvents="none"
-                    children={<CFaUserAlt color="gray.300" />}
-                  />
+                  <InputLeftElement pointerEvents="none">
+                    <CFaUserAlt color="gray.300" />
+                  </InputLeftElement>{" "}
                   <Input
                     type="text"
                     placeholder="Name"
@@ -134,10 +132,9 @@ function Signup() {
 
               <FormControl>
                 <InputGroup>
-                  <InputLeftElement
-                    pointerEvents="none"
-                    children={<CFaUserAlt color="gray.300" />}
-                  />
+                  <InputLeftElement pointerEvents="none">
+                    <CFaUserAlt color="gray.300" />
+                  </InputLeftElement>{" "}
                   <Input
                     type="email"
                     placeholder="Email Address"
@@ -150,11 +147,9 @@ function Signup() {
 
               <FormControl>
                 <InputGroup>
-                  <InputLeftElement
-                    pointerEvents="none"
-                    color="gray.300"
-                    children={<CFaLock color="gray.300" />}
-                  />
+                  <InputLeftElement pointerEvents="none">
+                    <CFaUserAlt color="gray.300" />
+                  </InputLeftElement>{" "}
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
