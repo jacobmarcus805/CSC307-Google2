@@ -6,7 +6,7 @@ import userServices from "./api/user-services.js";
 import groupServices from "./api/group-services.js";
 import eventServices from "./api/event-services.js";
 import dotenv from "dotenv";
-import { registerUser, authenticateUser, loginUser } from "./auth.js";
+import authFunctions from "./auth.js";
 
 // Testing yo
 
@@ -73,7 +73,7 @@ app.get("/users/:id", (req, res) => {
     });
 });
 
-app.post("/users", authenticateUser, (req, res) => {
+app.post("/users", authFunctions.authenticateUser, (req, res) => {
   console.log("Received request to add user:", req.body);
   const userToAdd = req.body;
 
@@ -340,8 +340,8 @@ app.delete("/events/:id", (req, res) => {
 });
 
 // login route from auth TA 4
-app.post("/login", loginUser);
-app.post("/signup", registerUser);
+app.post("/login", authFunctions.loginUser);
+app.post("/signup", authFunctions.registerUser);
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
