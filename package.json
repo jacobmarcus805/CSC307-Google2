@@ -6,6 +6,7 @@
     "lint": "npx eslint . --ignore-pattern '**/dist/**' && npx prettier --write --check . --ignore-path .prettierignore",
     "dev": "npm run dev --workspace react-frontend",
     "start": "node --workspace react-frontend",
+    "test": "npx jest --passWithNoTests",
     "prepare": "husky install"
   },
   "author": "",
