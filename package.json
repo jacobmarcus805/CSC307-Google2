@@ -7,7 +7,7 @@
     "dev": "npm run dev --workspace react-frontend",
     "start": "node --workspace react-frontend",
     "test": "npx jest --passWithNoTests",
-    "prepare": "husky install"
+    "prepare": "if [ \"$CI\" != \"true\" ]; then husky install; fi"
   },
   "author": "",
   "license": "ISC",
