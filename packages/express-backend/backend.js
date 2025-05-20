@@ -6,6 +6,7 @@ import userServices from "./api/user-services.js";
 import groupServices from "./api/group-services.js";
 import eventServices from "./api/event-services.js";
 import dotenv from "dotenv";
+import { registerUser, authenticateUser, loginUser } from "./auth.js";
 
 // Testing yo
 
@@ -342,7 +343,6 @@ app.delete("/events/:id", (req, res) => {
 // login route from auth TA 4
 app.post("/login", loginUser);
 app.post("/signup", registerUser);
-
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
