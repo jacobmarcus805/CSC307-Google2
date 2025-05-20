@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "lint": "npx eslint . && npx prettier --check .",
+    "lint": "npx eslint . --ignore-pattern '**/dist/**' && npx prettier --check . --ignore-path .prettierignore",
     "test": "npx jest",
     "dev": "npm run dev --workspace react-frontend",
     "start": "node --workspace react-frontend",
@@ -13,7 +13,8 @@
   "license": "ISC",
   "description": "",
   "workspaces": [
-    "packages/*"
+    "packages/react-frontend",
+    "packages/express-backend"
   ],
   "devDependencies": {
     "@eslint/js": "^9.25.1",

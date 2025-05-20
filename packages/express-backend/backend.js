@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import userModel from "./schemas/user.js";
-import groupModel from "./schemas/group.js";
 import userServices from "./api/user-services.js";
 import groupServices from "./api/group-services.js";
 import eventServices from "./api/event-services.js";
@@ -24,10 +23,6 @@ mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((error) => console.error("MongoDB connection error:", error));
-
-function generate_random_id() {
-  return Math.random().toString(36).substring(2, 9);
-}
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -73,6 +68,7 @@ app.get("/users/:id", (req, res) => {
       }
     })
     .catch((error) => {
+      console.log("error getting user: ", error);
       res.status(500).send("Internal server error.");
     });
 });
@@ -93,7 +89,13 @@ app.post("/users", authenticateUser, (req, res) => {
   console.log("Adding user:", userToAdd);
   addUser(userToAdd)
     .then(() => {
-      res.status(201).send();
+      res.status(201).json({
+        message: "User created successfully",
+        user: {
+          name: userToAdd.name,
+          email: userToAdd.email,
+        },
+      });
     })
     .catch((error) => {
       res.status(500).send("Internal server error.");
@@ -116,7 +118,7 @@ app.patch("/users/:id", (req, res) => {
       }
     })
     .catch((error) => {
-      es.status(500).send("Internal server error.");
+      res.status(500).send("Internal server error.");
       console.error("Error patching user:", error);
     });
 });
@@ -134,6 +136,7 @@ app.delete("/users/:id", (req, res) => {
       }
     })
     .catch((error) => {
+      console.log("Error deleting user", error);
       res.status(500).send("Internal server error.");
     });
 });
@@ -221,7 +224,7 @@ app.delete("/groups/:id", (req, res) => {
   const { id } = req.params;
 
   groupServices
-    .findByIdAndDelete(id)
+    .findGroupByIdAndDelete(id)
     .then((result) => {
       if (result) {
         console.log("Deleting group");
@@ -340,6 +343,7 @@ app.delete("/events/:id", (req, res) => {
 app.post("/login", loginUser);
 app.post("/signup", registerUser);
 
-app.listen(port, (req, res) => {
+
+app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });

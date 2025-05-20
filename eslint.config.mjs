@@ -6,6 +6,7 @@ import { defineConfig } from "eslint/config";
 export default defineConfig([
   {
     files: ["**/*.{js,mjs,cjs,jsx}"],
+    ignores: ["**/dist/**", "**/node_modules/**"],
     plugins: { js },
     extends: ["js/recommended"],
     languageOptions: {
@@ -15,6 +16,9 @@ export default defineConfig([
         console: "readonly",
         process: "readonly",
       },
+    },
+    rules: {
+      "no-unused-vars": "warn",
     },
   },
   {

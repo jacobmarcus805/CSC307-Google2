@@ -1,6 +1,4 @@
-import { mongoose } from "mongoose";
 import groupModel from "../schemas/group.js";
-import dotenv from "dotenv";
 
 function addGroup(group) {
   const groupToAdd = new groupModel(group);
@@ -38,4 +36,5 @@ export default {
   findGroupById,
   updateGroupById,
   getGroups,
+  findGroupByIdAndDelete,
 };

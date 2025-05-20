@@ -13,7 +13,6 @@ import {
   Link,
   Avatar,
   FormControl,
-  FormHelperText,
   InputRightElement,
 } from "@chakra-ui/react";
 import { FaUserAlt, FaLock } from "react-icons/fa";
@@ -53,20 +52,18 @@ function Login() {
             >
               <FormControl>
                 <InputGroup>
-                  <InputLeftElement
-                    pointerEvents="none"
-                    children={<CFaUserAlt color="gray.300" />}
-                  />
+                  <InputLeftElement pointerEvents="none">
+                    <CFaUserAlt color="gray.300" />
+                  </InputLeftElement>
+
                   <Input type="email" placeholder="email address" />
                 </InputGroup>
               </FormControl>
               <FormControl>
                 <InputGroup>
-                  <InputLeftElement
-                    pointerEvents="none"
-                    color="gray.300"
-                    children={<CFaLock color="gray.300" />}
-                  />
+                  <InputLeftElement pointerEvents="none" color="gray.300">
+                    <CFaLock color="gray.300" />
+                  </InputLeftElement>{" "}
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
