@@ -73,7 +73,7 @@ app.get("/users/:id", (req, res) => {
     });
 });
 
-app.post("/users", (req, res) => {
+app.post("/users", authenticateUser, (req, res) => {
   console.log("Received request to add user:", req.body);
   const userToAdd = req.body;
 
@@ -338,6 +338,11 @@ app.delete("/events/:id", (req, res) => {
       res.status(500).send("Internal server error.");
     });
 });
+
+// login route from auth TA 4
+app.post("/login", loginUser);
+app.post("/signup", registerUser);
+
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
