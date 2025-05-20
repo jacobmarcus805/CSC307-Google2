@@ -344,6 +344,6 @@ app.delete("/events/:id", (req, res) => {
 app.post("/login", authFunctions.loginUser);
 app.post("/signup", authFunctions.registerUser);
 
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+app.listen(process.env.PORT || port, () => {
+  console.log("REST API is listening.");
 });
