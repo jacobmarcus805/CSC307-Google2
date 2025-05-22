@@ -16,11 +16,13 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { FaUserAlt, FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const CFaUserAlt = chakra(FaUserAlt);
 const CFaArrowLeft = chakra(FaArrowLeft);
 
 function Signup() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -55,7 +57,7 @@ function Signup() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/users`,
+        `${import.meta.env.VITE_API_BASE_URL}/signup`,
         {
           method: "POST",
           headers: {
@@ -82,6 +84,10 @@ function Signup() {
         email: "",
         password: "",
       });
+
+      const { sub: userId } = JSON.parse(atob(data.token.split(".")[1]));
+      navigate("${userId}/schedule");
+      navigate(`/${userId}/schedule`);
     } catch (error) {
       console.error("Error during sign up:", error);
       setErrorMessage(error.message || "An error occurred during sign up.");
@@ -186,6 +192,7 @@ function Signup() {
                 backgroundColor="green.700"
                 color="white"
                 width="full"
+                onClick={handleSubmit}
                 isLoading={loading} // Show loading spinner
               >
                 Sign Up
