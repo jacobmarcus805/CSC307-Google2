@@ -41,50 +41,114 @@ function Signup() {
     });
   };
 
+  const [token, setToken] = useState(null);
+  const [message, setMessage] = useState("");
+  const API_PREFIX = import.meta.env.VITE_API_BASE_URL;
+
+  function signupUser(creds) {
+    return fetch(`${API_PREFIX}/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: creds.name,
+        email: creds.username,
+        password: creds.pwd,
+      }),
+    })
+      .then((response) => {
+        if (response.status === 201) {
+          return response.json().then((payload) => {
+            setToken(payload.token);
+            localStorage.setItem("authToken", payload.token);
+            setMessage(
+              `Signup successful for user: ${creds.username}; auth token saved`,
+            );
+            setSuccessMessage(
+              "Account created successfully! Redirecting to login...",
+            );
+            return payload.token;
+          });
+        } else {
+          const error = `Signup Error ${response.status}`;
+          setMessage(error);
+          setErrorMessage(error);
+          throw new Error(error);
+        }
+      })
+      .catch((error) => {
+        const errorMsg = `Signup Error: ${error.message}`;
+        setMessage(errorMsg);
+        setErrorMessage(errorMsg);
+        throw error;
+      });
+  }
+
+  // Simplified handleSubmit function
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-    setErrorMessage(""); // Clear any previous error messages
-    setSuccessMessage(""); // Clear any previous success messages
+    setErrorMessage("");
+    setSuccessMessage("");
+    setMessage("");
 
-    const formattedData = {
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-    };
+    // Validate form data
+    if (!formData.name || !formData.email || !formData.password) {
+      setErrorMessage("All fields are required.");
+      setLoading(false);
+      return;
+    }
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/users`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formattedData),
-        },
-      );
+      // Call the signupUser function with credentials
+      const token = await signupUser({
+        username: formData.email,
+        pwd: formData.password,
+      });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to sign up");
+      // If we get here, the signup was successful
+      console.log("Signup successful, token:", token);
+
+      // Create the user profile with the token
+      const userResponse = await fetch(`${API_PREFIX}/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      if (!userResponse.ok) {
+        const errorData = await userResponse.json().catch(() => ({}));
+        throw new Error(
+          errorData.error ||
+            `User creation failed with status ${userResponse.status}`,
+        );
       }
 
-      const data = await response.json();
-      console.log("User created successfully:", data);
+      const userData = await userResponse.json();
+      console.log("User created successfully:", userData);
 
-      // Display success message
-      setSuccessMessage("User created successfully!");
-
-      // Clear the form on success
+      // Clear the form
       setFormData({
         name: "",
         email: "",
         password: "",
       });
+
+      // Redirect to login page after a delay
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 2000);
     } catch (error) {
       console.error("Error during sign up:", error);
-      setErrorMessage(error.message || "An error occurred during sign up.");
+      // The error message is already set in the signupUser function
     } finally {
       setLoading(false);
     }
