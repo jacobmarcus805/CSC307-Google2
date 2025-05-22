@@ -345,4 +345,6 @@ app.post("/signup", authFunctions.registerUser);
 
 app.listen(process.env.PORT || port, () => {
   console.log("REST API is listening.");
+  // log port
+  console.log("Listening on port: ", process.env.PORT || port);
 });
