@@ -5,9 +5,12 @@ import userModel from "./schemas/user.js";
 import userServices from "./api/user-services.js";
 import groupServices from "./api/group-services.js";
 import eventServices from "./api/event-services.js";
-import dotenv from "dotenv";
+//import dotenv from "dotenv";
 import authFunctions from "./auth.js";
 
+if (process.env.NODE_ENV !== "production") {
+  import("dotenv").then((dotenv) => dotenv.config());
+}
 // Testing yo
 
 const app = express();
@@ -15,7 +18,7 @@ const port = 8000;
 app.use(cors());
 app.use(express.json());
 
-dotenv.config(); // Load environment variables
+//dotenv.config(); // Load environment variables
 
 mongoose.set("debug", true);
 console.log("mongo uri: ", process.env.MONGODB_URI);
