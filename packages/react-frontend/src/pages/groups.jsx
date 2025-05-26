@@ -1,4 +1,5 @@
 import React from "react";
+// import { useState, useEffect } from "react";
 import GroupCard from "../components/groups_components/group_card";
 import { Heading, SimpleGrid } from "@chakra-ui/react";
 
@@ -27,11 +28,10 @@ const groups_data = [
 const ListGroups = ({ groups }) => {
   return (
     <SimpleGrid
-      columns={2}
-      spacing={20}
+      columns={1}
+      spacing={"1em"}
       justifyItems={"center"}
-      alignItems={"center"}
-      justifyContent={"center"}
+      alignItems={"start"}
     >
       {groups.map((group) => (
         <GroupCard key={group.name} group={group} />
@@ -40,13 +40,15 @@ const ListGroups = ({ groups }) => {
   );
 };
 
-const Groups = () => {
+function Groups() {
   return (
     <div>
-      <Heading textAlign="center">Groups</Heading>
+      <Heading textAlign="center" mb="0.5em" mt="0.5em">
+        Your Groups
+      </Heading>
       <ListGroups groups={groups_data} />
     </div>
   );
-};
+}
 
 export default Groups;

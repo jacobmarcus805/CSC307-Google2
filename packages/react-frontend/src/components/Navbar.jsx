@@ -35,7 +35,7 @@ function Navbar() {
           {/* Groups Button */}
           <Button
             as={RouterLink}
-            to="/groups"
+            to="/:username/groups"
             colorScheme="green"
             variant="ghost"
             size="lg"
