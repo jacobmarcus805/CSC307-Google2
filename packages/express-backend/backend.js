@@ -33,7 +33,7 @@ function addUser(user) {
   return promise;
 }
 
-app.get("/users", (req, res) => {
+app.get("/users", authFunctions.authenticateUser, (req, res) => {
   let promise;
   promise = userModel.find();
 
@@ -54,7 +54,7 @@ app.get("/users", (req, res) => {
   return;
 });
 
-app.get("/users/:id", (req, res) => {
+app.get("/users/:id", authFunctions.authenticateUser, (req, res) => {
   const id = req.params["id"];
   let result = userServices.findUserById(id);
 
@@ -84,7 +84,7 @@ app.get("/users/:id/events", (req, res) => {
     });
 });
 
-app.post("/users", authFunctions.authenticateUser, (req, res) => {
+app.post("/users", (req, res) => {
   console.log("Received request to add user:", req.body);
   const userToAdd = req.body;
 
@@ -99,12 +99,11 @@ app.post("/users", authFunctions.authenticateUser, (req, res) => {
   }
   console.log("Adding user:", userToAdd);
   addUser(userToAdd)
-    .then(() => {
+    .then((savedUser) => {
       res.status(201).json({
         message: "User created successfully",
         user: {
-          name: userToAdd.name,
-          email: userToAdd.email,
+          savedUser,
         },
       });
     })
@@ -114,7 +113,7 @@ app.post("/users", authFunctions.authenticateUser, (req, res) => {
     });
 });
 
-app.patch("/users/:id", (req, res) => {
+app.patch("/users/:id", authFunctions.authenticateUser, (req, res) => {
   const { id } = req.params;
   const update = req.body;
 

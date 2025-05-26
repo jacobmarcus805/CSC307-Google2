@@ -3,9 +3,9 @@ import jwt from "jsonwebtoken";
 import User from "./schemas/user.js";
 
 async function registerUser(req, res) {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: "Missing email or password." });
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: "Missing name, email or password." });
   }
 
   if (await User.exists({ email })) {
@@ -13,12 +13,9 @@ async function registerUser(req, res) {
   }
 
   try {
-    const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(password, salt);
-    const user = await User.create({ email, password: hash });
-
+    const hash = await bcrypt.hash(password, await bcrypt.genSalt(10));
+    const user = await User.create({ name, email, password: hash });
     const token = generateAccessToken({ sub: user._id, email: user.email });
-
     return res.status(201).json({ token });
   } catch (err) {
     console.error("Error in registerUser:", err);
