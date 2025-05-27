@@ -219,6 +219,18 @@ app.get("/groups/:id", (req, res) => {
     });
 });
 
+app.get("/:userId/groups", (req, res) => {
+  const userId = req.params.userId;
+
+  userServices.findUserById(userId).then((user) => {
+    if (!user) {
+      res.status(404).send("User not found.");
+    } else {
+      res.json(user.groupIds);
+    }
+  });
+});
+
 app.delete("/groups/:id", (req, res) => {
   const { id } = req.params;
 
