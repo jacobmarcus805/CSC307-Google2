@@ -11,7 +11,7 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/:userId/schedule" element={<Schedule />} />
-      <Route path="/:username/groups" element={<Groups />} />
+      <Route path="/:userId/groups" element={<Groups />} />
       <Route path="/schedule" element={<Schedule />} />
     </Routes>
   );

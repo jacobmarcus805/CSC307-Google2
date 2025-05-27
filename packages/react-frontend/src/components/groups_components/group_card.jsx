@@ -6,7 +6,6 @@ import {
   AccordionPanel,
   AccordionItem,
   Card,
-  CardHeader,
   CardBody,
   Heading,
   Text,

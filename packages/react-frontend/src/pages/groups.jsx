@@ -1,7 +1,7 @@
-import React from "react";
-// import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import GroupCard from "../components/groups_components/group_card";
 import { Heading, SimpleGrid } from "@chakra-ui/react";
+import { useParams } from "react-router-dom";
 
 const groups_data = [
   {
@@ -41,12 +41,30 @@ const ListGroups = ({ groups }) => {
 };
 
 function Groups() {
+  const { userId } = useParams();
+  const [groups, setGroups] = useState([]);
+
+  useEffect(() => {
+    fetch(`/${userId}/groups/`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data && data.groups_list) {
+          setGroups(data.groups_list);
+          console.log("Fetched groups:", data.groups_list);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching groups:", error);
+        setGroups(groups_data); // fallback to static data
+      });
+  }, []);
+
   return (
     <div>
       <Heading textAlign="center" mb="0.5em" mt="0.5em">
         Your Groups
       </Heading>
-      <ListGroups groups={groups_data} />
+      <ListGroups groups={groups} />
     </div>
   );
 }
