@@ -7,7 +7,6 @@ import groupServices from "./api/group-services.js";
 import eventServices from "./api/event-services.js";
 import dotenv from "dotenv";
 import authFunctions from "./auth.js";
-// Testing yo
 
 const app = express();
 const port = 8000;
@@ -70,6 +69,18 @@ app.get("/users/:id", authFunctions.authenticateUser, (req, res) => {
     .catch((error) => {
       console.log("error getting user: ", error);
       res.status(500).send("Internal server error.");
+    });
+});
+
+app.get("/users/:id/events", (req, res) => {
+  userServices
+    .getUserSchedules(req.auth.userId, req.params.id)
+    .then((events) => {
+      res.json(events);
+    })
+    .catch((error) => {
+      res.status(500).send("Internal server error");
+      console.error("Error getting user events:", error);
     });
 });
 
