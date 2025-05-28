@@ -13,9 +13,6 @@ function App() {
     <Router>
       <Navbar />
       <Routes>
-        {/* Redirect / to /login */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-
         {/* All other routes */}
         <Route path="/*" element={<AppRoutes />} />
       </Routes>

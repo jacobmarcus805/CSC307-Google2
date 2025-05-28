@@ -9,7 +9,7 @@ function Navbar() {
         {/* App Name */}
         <Link
           as={RouterLink}
-          to="/login"
+          to="/"
           fontWeight="bold"
           fontSize="lg"
           color="white"
