@@ -1,8 +1,14 @@
 import React from "react";
 import { Box, Flex, Link, Button } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
+import { useUser } from "../context/UserContext"; // Assuming you have a UserContext to get user info
 
 function Navbar() {
+  const { user } = useUser(); // Assuming useUser is a custom hook to get user context
+  if (!user) {
+    return null; // If user is not logged in, don't render the navbar
+  }
+
   return (
     <Box bg="green.700" px={4} py={2} color="white">
       <Flex alignItems="center" justifyContent="center">
@@ -23,7 +29,7 @@ function Navbar() {
           {/* Schedule Button */}
           <Button
             as={RouterLink}
-            to="/username/schedule"
+            to={`/${user.userId}/schedule`}
             colorScheme="green"
             variant="ghost"
             size="lg"
@@ -35,7 +41,7 @@ function Navbar() {
           {/* Groups Button */}
           <Button
             as={RouterLink}
-            to="/:userId/groups"
+            to={`/${user.userId}/groups`}
             colorScheme="green"
             variant="ghost"
             size="lg"

@@ -34,7 +34,7 @@ const ListGroups = ({ groups }) => {
       alignItems={"start"}
     >
       {groups.map((group) => (
-        <GroupCard key={group.name} group={group} />
+        <GroupCard key={group._id} group={group} />
       ))}
     </SimpleGrid>
   );
@@ -45,19 +45,29 @@ function Groups() {
   const [groups, setGroups] = useState([]);
 
   useEffect(() => {
-    fetch(`/${userId}/groups/`)
-      .then((response) => response.json())
+    if (!userId) return;
+
+    fetch(`http://localhost:8000/${userId}/groups/`)
+      .then((response) => {
+        console.log("Response", response);
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
       .then((data) => {
         if (data && data.groups_list) {
           setGroups(data.groups_list);
           console.log("Fetched groups:", data.groups_list);
+        } else {
+          throw new Error("No groups found in response");
         }
       })
       .catch((error) => {
-        console.error("Error fetching groups:", error);
+        console.error("Error fetching groups:", error.message);
         setGroups(groups_data); // fallback to static data
       });
-  }, []);
+  }, [userId]);
 
   return (
     <div>

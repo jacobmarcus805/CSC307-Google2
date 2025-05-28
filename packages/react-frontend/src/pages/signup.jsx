@@ -17,11 +17,13 @@ import {
 } from "@chakra-ui/react";
 import { FaUserAlt, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserContext"; // Assuming you have a UserContext to get user info
 
 const CFaUserAlt = chakra(FaUserAlt);
 const CFaArrowLeft = chakra(FaArrowLeft);
 
 function Signup() {
+  const { setUser } = useUser(); // Assuming useUser is a custom hook to get user context
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -86,7 +88,7 @@ function Signup() {
       });
 
       const { sub: userId } = JSON.parse(atob(data.token.split(".")[1]));
-      navigate("${userId}/schedule");
+      setUser({ userId: userId });
       navigate(`/${userId}/schedule`);
     } catch (error) {
       console.error("Error during sign up:", error);

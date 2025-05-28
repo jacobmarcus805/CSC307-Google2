@@ -231,15 +231,24 @@ app.get("/groups/:id", (req, res) => {
 });
 
 app.get("/:userId/groups", (req, res) => {
-  const userId = req.params.userId;
+  const { userId } = req.params;
 
-  userServices.findUserById(userId).then((user) => {
-    if (!user) {
-      res.status(404).send("User not found.");
-    } else {
-      res.json(user.groupIds);
-    }
-  });
+  userServices
+    .findUserById(userId)
+    .then((user) => {
+      if (!user) {
+        return res.status(404).send("User not found.");
+      }
+      const groupIds = user.groups_in.map((group) => group.toString());
+      return Promise.all(groupIds.map((id) => groupServices.findGroupById(id)));
+    })
+    .then((groups) => {
+      res.json({ groups_list: groups });
+    })
+    .catch((error) => {
+      console.error("Error fetching user's groups:", error);
+      res.status(500).send("Internal server error.");
+    });
 });
 
 app.delete("/groups/:id", (req, res) => {
