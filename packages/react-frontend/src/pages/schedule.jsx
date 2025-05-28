@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import format from "date-fns/format";
 import parse from "date-fns/parse";
-import startOfWeek from "date-fns/startOfWeek";
 import getDay from "date-fns/getDay";
 import addDays from "date-fns/addDays";
 import startOfDay from "date-fns/startOfDay";
@@ -308,7 +307,7 @@ function Schedule() {
   return (
     <Box p={5}>
       <Heading mb={4}>Weekly Schedule</Heading>
-      <Button colorScheme="green" onClick={handleAddEvent} mb={4}>
+      <Button colorScheme="green.700" onClick={handleAddEvent} mb={4}>
         Add New Event
       </Button>
       <Box
@@ -454,12 +453,10 @@ function Schedule() {
                   <strong>Status:</strong>{" "}
                   <Text
                     as="span"
-                    color={selectedEvent.can_sit ? "green.500" : "red.500"}
+                    color={selectedEvent.can_sit ? "green.700" : "red.500"}
                     fontWeight="bold"
                   >
-                    {selectedEvent.can_sit
-                      ? "Can Sit (Green)"
-                      : "Cannot Sit (Red)"}
+                    {selectedEvent.can_sit ? "Can Sit" : "Cannot Sit"}
                   </Text>
                 </Box>
               </>
