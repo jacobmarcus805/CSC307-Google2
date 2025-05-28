@@ -307,7 +307,7 @@ function Schedule() {
   return (
     <Box p={5}>
       <Heading mb={4}>Weekly Schedule</Heading>
-      <Button colorScheme="green.700" onClick={handleAddEvent} mb={4}>
+      <Button colorScheme="green" onClick={handleAddEvent} mb={4}>
         Add New Event
       </Button>
       <Box
