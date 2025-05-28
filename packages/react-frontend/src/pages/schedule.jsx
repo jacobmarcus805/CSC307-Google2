@@ -224,12 +224,14 @@ function Schedule() {
     setNewEvent({
       ...selectedEvent,
     });
-
+    setIsEditMode(true);
     onEventDetailsClose();
     onOpen();
   };
 
   const handleSaveEvent = () => {
+    console.log("Events before saving:", events);
+
     if (
       newEvent.title &&
       newEvent.day &&
@@ -237,21 +239,35 @@ function Schedule() {
       newEvent.end_time &&
       newEvent.location
     ) {
+      // Recalculate start and end
+      const updatedEvent = {
+        ...newEvent,
+        start: minutesToDate(newEvent.day, newEvent.start_time),
+        end: minutesToDate(newEvent.day, newEvent.end_time),
+      };
+
+      let updatedEvents;
       if (isEditMode) {
-        const updatedEvents = events.map((event) =>
-          event.id === newEvent.id ? newEvent : event,
+        // Replace the original event with the updated event
+        updatedEvents = events.map((event) =>
+          event.id === updatedEvent.id ? updatedEvent : event,
         );
-        setEvents(updatedEvents);
-        setIsEditMode(false);
+        setIsEditMode(false); // Reset edit mode
       } else {
-        setEvents([...events, newEvent]);
+        // Add a new event
+        updatedEvents = [...events, { ...updatedEvent, id: Date.now() }];
       }
 
-      onClose();
+      setEvents(updatedEvents);
+
+      console.log("Updated Events:", updatedEvents);
+
+      onClose(); // Close modal
     } else {
       alert("Please fill in all fields");
     }
   };
+
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
     onEventDetailsOpen();
