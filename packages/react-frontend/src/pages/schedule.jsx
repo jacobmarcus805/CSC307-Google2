@@ -68,11 +68,6 @@ const minutesToDate = (day, minutes) => {
   return new Date(dayDate.setHours(hours, mins, 0, 0));
 };
 
-// Helper function to convert Date to minutes since midnight
-const dateToMinutes = (date) => {
-  return date.getHours() * 60 + date.getMinutes();
-};
-
 // Mock event data
 const initialEvents = [
   {
@@ -295,7 +290,7 @@ function Schedule() {
   };
 
   const formats = {
-    dayFormat: (date, culture, localizer) => {
+    dayFormat: (date) => {
       const jsDay = date.getDay();
       const dayIndex = jsDay === 0 ? 6 : jsDay - 1;
       return (
@@ -402,9 +397,7 @@ function Schedule() {
             </FormControl>
 
             <FormControl mb={3} display="flex" alignItems="center" isRequired>
-              <FormLabel mb="0">
-                Can Sit? {newEvent.can_sit ? "(Green)" : "(Red)"}
-              </FormLabel>
+              <FormLabel mb="0">Can Sit?</FormLabel>
               <Switch
                 isChecked={newEvent.can_sit}
                 onChange={handleCanSitToggle}
@@ -479,7 +472,7 @@ function Schedule() {
   );
 }
 
-const CustomToolbar = ({ label }) => {
+const CustomToolbar = () => {
   return (
     <Box display="flex" justifyContent="center" mb={4}>
       <Text fontWeight="bold">Weekly Schedule</Text>
