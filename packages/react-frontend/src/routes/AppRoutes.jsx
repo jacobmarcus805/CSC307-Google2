@@ -4,9 +4,9 @@ import Login from "../pages/login";
 import Schedule from "../pages/schedule";
 import Groups from "../pages/groups";
 import Signup from "../pages/signup";
-import ManageGroup from "../pages/manageGroup";
 import Landing from "../pages/landing";
 import PrivateRoute from "../contexts/PrivateRoute";
+import ManageGroup from "../pages/manageGroup";
 
 function AppRoutes() {
   return (
@@ -17,9 +17,8 @@ function AppRoutes() {
       <Route element={<PrivateRoute />}>
         <Route path="/:userId/schedule" element={<Schedule />} />
         <Route path="/:userId/groups" element={<Groups />} />
-        <Route path="/:userID/groups/:groupId" element={<ManageGroup />} />
+        <Route path="/:userId/groups/:groupID" element={<ManageGroup />} />
       </Route>
-
       <Route path="*" element={<p>404: Not Found</p>} />
     </Routes>
   );
