@@ -212,6 +212,16 @@ function Schedule() {
     return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
   };
 
+  const formatAmPmFromMinutes = (minutes) => {
+    const hours24 = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+
+    const period = hours24 >= 12 ? "PM" : "AM";
+    const hours12 = hours24 % 12 || 12;
+
+    return `${hours12}:${mins.toString().padStart(2, "0")} ${period}`;
+  };
+
   const [isEditMode, setIsEditMode] = useState(false);
 
   const handleEditEvent = () => {
@@ -433,11 +443,11 @@ function Schedule() {
                 </Box>
                 <Box>
                   <strong>Start Time:</strong>{" "}
-                  {formatTimeFromMinutes(selectedEvent.start_time)}
+                  {formatAmPmFromMinutes(selectedEvent.start_time)}
                 </Box>
                 <Box>
                   <strong>End Time:</strong>{" "}
-                  {formatTimeFromMinutes(selectedEvent.end_time)}
+                  {formatAmPmFromMinutes(selectedEvent.end_time)}
                 </Box>
                 <Box>
                   <strong>Location:</strong> {selectedEvent.location}
