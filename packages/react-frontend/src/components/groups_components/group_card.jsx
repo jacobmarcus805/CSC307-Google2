@@ -6,74 +6,62 @@ import {
   AccordionPanel,
   AccordionItem,
   Card,
+  CardHeader,
   CardBody,
   Heading,
   Text,
+  Button,
+  Flex,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
-import React from "react";
+import { FaUserGroup } from "react-icons/fa6";
 
 function GroupCard({ group }) {
-  const [userDetails, setUserDetails] = useState({});
-
-  useEffect(() => {
-    if (!group.members || group.members.length === 0) return;
-
-    const fetchUserData = () => {
-      const fetches = group.members.map((userId) => {
-        return fetch(`http://localhost:8000/users/${userId}`)
-          .then((res) => {
-            if (!res.ok) throw new Error();
-            return res.json();
-          })
-          .then((data) => [userId, data])
-          .catch(() => {
-            console.error(`Failed to fetch user ${userId}`);
-            return [userId, { name: "Unknown User" }];
-          });
-      });
-
-      Promise.all(fetches).then((results) => {
-        const userMap = Object.fromEntries(results);
-        setUserDetails(userMap);
-      });
-    };
-
-    fetchUserData();
-  }, [group.members]);
-
-  const listUsers = (userIds) => {
-    return userIds.map((userId, idx) => {
-      const user = userDetails[userId];
-      const displayName = user ? user.name : "Loading...";
-      return (
-        <p key={idx} style={{ margin: "0.2em 0" }}>
-          {displayName}
-        </p>
-      );
-    });
+  const listMembers = (members) => {
+    return members.map((member, idx) => <p key={idx}>{member}</p>);
   };
 
   return (
     <Card w="md" variant={"outline"} bg={"green.100"}>
       <CardBody>
-        <Heading size="md" mb={2} textAlign={"center"}>
-          {group.name}
-        </Heading>
-        <Text mb={4}>{group.description}</Text>
-        <Accordion allowToggle variant={"subtle"}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5em",
+            paddingBottom: "0.5em",
+          }}
+        >
+          <Icon as={FaUserGroup} boxSize={"1.5em"} alignContent={"center"} />
+          <Heading size="md" mb={1}>
+            {group.name}
+          </Heading>
+        </div>
+        <Text>{group.description}</Text>
+        <Accordion
+          allowToggle
+          variant={"subtle"}
+          m={"0.5em"}
+          bg="green.200"
+          borderRadius={"md"}
+          border={"transparent"}
+        >
           <AccordionItem>
             <AccordionButton gap={2} alignItems={"center"}>
               <Icon as={FaUserCircle} boxSize={5} />
               <Text flex={1} textAlign={"left"}>
-                Users
+                Members
               </Text>
               <AccordionIcon />
             </AccordionButton>
-            <AccordionPanel>{listUsers(group.members)}</AccordionPanel>
+            <AccordionPanel>{listMembers(group.members)}</AccordionPanel>
           </AccordionItem>
         </Accordion>
+        <Flex placeContent={"flex-end"}>
+          <Button color={"red"} size={"sm"} variant={"ghost"}>
+            Leave
+          </Button>
+        </Flex>
       </CardBody>
     </Card>
   );

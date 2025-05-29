@@ -17,7 +17,9 @@ import {
 } from "@chakra-ui/react";
 import { FaUserAlt, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../context/UserContext"; // Assuming you have a UserContext to get user info
+
+import { useContext } from "react";
+import { AuthContext } from "../contexts/AuthContext";
 
 const CFaUserAlt = chakra(FaUserAlt);
 const CFaArrowLeft = chakra(FaArrowLeft);
@@ -34,6 +36,8 @@ function Signup() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  const { login } = useContext(AuthContext);
 
   const handleShowClick = () => setShowPassword(!showPassword);
 
@@ -75,6 +79,8 @@ function Signup() {
       }
 
       const data = await response.json();
+      login(data.token); // ← persist the token
+
       console.log("User created successfully:", data);
 
       // Display success message
@@ -88,7 +94,6 @@ function Signup() {
       });
 
       const { sub: userId } = JSON.parse(atob(data.token.split(".")[1]));
-      setUser({ userId: userId });
       navigate(`/${userId}/schedule`);
     } catch (error) {
       console.error("Error during sign up:", error);
@@ -194,7 +199,6 @@ function Signup() {
                 backgroundColor="green.700"
                 color="white"
                 width="full"
-                onClick={handleSubmit}
                 isLoading={loading} // Show loading spinner
               >
                 Sign Up

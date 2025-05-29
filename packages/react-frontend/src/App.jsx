@@ -12,17 +12,11 @@ import { UserProvider } from "./context/UserContext"; // Import UserProvider
 function App() {
   return (
     <Router>
-      <UserProvider>
-        {/* User context provider to manage user state */}
-        <Navbar />
-        <Routes>
-          {/* Redirect / to /login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-
-          {/* All other routes */}
-          <Route path="/*" element={<AppRoutes />} />
-        </Routes>
-      </UserProvider>
+      <Navbar />
+      <Routes>
+        {/* All other routes */}
+        <Route path="/*" element={<AppRoutes />} />
+      </Routes>
     </Router>
   );
 }
