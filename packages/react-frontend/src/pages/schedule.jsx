@@ -217,7 +217,7 @@ function Schedule() {
     const mins = minutes % 60;
 
     const period = hours24 >= 12 ? "PM" : "AM";
-    const hours12 = hours24 % 12 || 12; // Converts 0 to 12 for 12 AM
+    const hours12 = hours24 % 12 || 12;
 
     return `${hours12}:${mins.toString().padStart(2, "0")} ${period}`;
   };
