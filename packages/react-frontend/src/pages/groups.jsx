@@ -28,10 +28,11 @@ const groups_data = [
 const ListGroups = ({ groups }) => {
   return (
     <SimpleGrid
-      columns={1}
-      spacing={"1em"}
+      columns={2}
+      spacing={20}
       justifyItems={"center"}
-      alignItems={"start"}
+      alignItems={"center"}
+      justifyContent={"center"}
     >
       {groups.map((group) => (
         <GroupCard key={group._id} group={group} />
@@ -40,43 +41,13 @@ const ListGroups = ({ groups }) => {
   );
 };
 
-function Groups() {
-  const { userId } = useParams();
-  const [groups, setGroups] = useState([]);
-
-  useEffect(() => {
-    if (!userId) return;
-
-    fetch(`http://localhost:8000/${userId}/groups/`)
-      .then((response) => {
-        console.log("Response", response);
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        if (data && data.groups_list) {
-          setGroups(data.groups_list);
-          console.log("Fetched groups:", data.groups_list);
-        } else {
-          throw new Error("No groups found in response");
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching groups:", error.message);
-        setGroups(groups_data); // fallback to static data
-      });
-  }, [userId]);
-
+const Groups = () => {
   return (
     <div>
-      <Heading textAlign="center" mb="0.5em" mt="0.5em">
-        Your Groups
-      </Heading>
-      <ListGroups groups={groups} />
+      <Heading textAlign="center">Groups</Heading>
+      <ListGroups groups={groups_data} />
     </div>
   );
-}
+};
 
 export default Groups;

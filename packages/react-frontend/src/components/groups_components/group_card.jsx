@@ -57,10 +57,10 @@ function GroupCard({ group }) {
   return (
     <Card w="md" variant={"outline"} bg={"green.100"}>
       <CardBody>
-        <Heading size="md" mb={1}>
+        <Heading size="md" mb={2} textAlign={"center"}>
           {group.name}
         </Heading>
-        <Text>{group.description}</Text>
+        <Text mb={4}>{group.description}</Text>
         <Accordion allowToggle variant={"subtle"}>
           <AccordionItem>
             <AccordionButton gap={2} alignItems={"center"}>

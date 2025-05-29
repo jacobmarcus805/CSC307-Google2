@@ -41,7 +41,7 @@ function Navbar() {
           {/* Groups Button */}
           <Button
             as={RouterLink}
-            to={`/${user.userId}/groups`}
+            to="/groups"
             colorScheme="green"
             variant="ghost"
             size="lg"
