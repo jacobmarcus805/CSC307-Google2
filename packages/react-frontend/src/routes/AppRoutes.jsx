@@ -4,6 +4,7 @@ import Login from "../pages/login";
 import Schedule from "../pages/schedule";
 import Groups from "../pages/groups";
 import Signup from "../pages/signup";
+import ManageGroup from "../pages/manageGroup";
 
 function AppRoutes() {
   return (
@@ -13,6 +14,7 @@ function AppRoutes() {
       <Route path="/:userId/schedule" element={<Schedule />} />
       <Route path="/:username/groups" element={<Groups />} />
       <Route path="/schedule" element={<Schedule />} />
+      <Route path="/groups/:groupId" element={<ManageGroup />} />
     </Routes>
   );
 }
