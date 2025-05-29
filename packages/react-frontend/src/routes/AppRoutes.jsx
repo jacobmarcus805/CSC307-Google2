@@ -4,6 +4,7 @@ import Login from "../pages/login";
 import Schedule from "../pages/schedule";
 import Groups from "../pages/groups";
 import Signup from "../pages/signup";
+import Landing from "../pages/landing";
 
 function AppRoutes() {
   return (
@@ -13,6 +14,8 @@ function AppRoutes() {
       <Route path="/:userId/schedule" element={<Schedule />} />
       <Route path="/:username/groups" element={<Groups />} />
       <Route path="/schedule" element={<Schedule />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="*" element={<p>404: Not Found</p>} />
     </Routes>
   );
 }
