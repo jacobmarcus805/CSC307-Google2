@@ -17,7 +17,7 @@ async function registerUser(req, res) {
     const user = await User.create({ name, email, password: hash });
     const token = generateAccessToken({ sub: user._id, email: user.email });
 
-    return res.status(201).json({ token, userId: user._id });
+    return res.status(201).json({ token });
   } catch (err) {
     console.error("Error in registerUser:", err);
     return res.status(500).json({ error: "Internal server error." });

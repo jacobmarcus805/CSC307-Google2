@@ -25,7 +25,6 @@ const CFaUserAlt = chakra(FaUserAlt);
 const CFaArrowLeft = chakra(FaArrowLeft);
 
 function Signup() {
-  const { setUser } = useUser(); // Assuming useUser is a custom hook to get user context
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({

@@ -1,6 +1,5 @@
 import React from "react";
 import { useState } from "react";
-import { useUser } from "../context/UserContext";
 import {
   Flex,
   Heading,
@@ -95,8 +94,6 @@ function Login() {
 
       // navigate to users schedule
       const { sub: userId } = JSON.parse(atob(data.token.split(".")[1]));
-      console.log("User ID:", userId);
-      setUser({ userId: userId }); // setUser is a function to set the user context
       navigate(`/${userId}/schedule`);
     } catch (error) {
       console.error("Error during log in:", error);
