@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
+import React from "react";
 
 function GroupCard({ group }) {
   const [userDetails, setUserDetails] = useState({});
