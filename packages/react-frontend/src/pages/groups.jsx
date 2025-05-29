@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import GroupCard from "../components/groups_components/group_card";
 import { Heading, SimpleGrid } from "@chakra-ui/react";
-import { useParams } from "react-router-dom";
 
 const groups_data = [
   {
