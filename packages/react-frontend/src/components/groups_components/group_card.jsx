@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import {
   Icon,
   Accordion,
@@ -7,7 +8,6 @@ import {
   AccordionPanel,
   AccordionItem,
   Card,
-  CardHeader,
   CardBody,
   Heading,
   Text,
@@ -67,5 +67,13 @@ function GroupCard({ group }) {
     </Card>
   );
 }
+
+GroupCard.propTypes = {
+  group: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+    members: PropTypes.arrayOf(PropTypes.string).isRequired,
+  }).isRequired,
+};
 
 export default GroupCard;

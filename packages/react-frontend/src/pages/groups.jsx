@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import GroupCard from "../components/groups_components/group_card";
 import { Heading, SimpleGrid } from "@chakra-ui/react";
 
@@ -42,6 +43,17 @@ const ListGroups = ({ groups }) => {
       ))}
     </SimpleGrid>
   );
+};
+
+ListGroups.propTypes = {
+  groups: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      description: PropTypes.string.isRequired,
+      admins: PropTypes.arrayOf(PropTypes.string).isRequired,
+      members: PropTypes.arrayOf(PropTypes.string).isRequired,
+    }),
+  ).isRequired,
 };
 
 const Groups = () => {
