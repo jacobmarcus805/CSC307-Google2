@@ -17,7 +17,7 @@ function AppRoutes() {
       <Route element={<PrivateRoute />}>
         <Route path="/:userId/schedule" element={<Schedule />} />
         <Route path="/:userId/groups" element={<Groups />} />
-        <Route path="/:userId/groups/:groupID" element={<ManageGroup />} />
+        <Route path="/:userId/groups/:groupId" element={<ManageGroup />} />
       </Route>
       <Route path="*" element={<p>404: Not Found</p>} />
     </Routes>
