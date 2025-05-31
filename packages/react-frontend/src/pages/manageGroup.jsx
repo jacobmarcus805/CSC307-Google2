@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import MembersTable from "../components/membersTable";
+import MembersTable from "../components/groups_components/membersTable";
 import { useParams } from "react-router-dom";
 
 function ManageGroup() {
