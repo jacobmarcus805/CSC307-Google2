@@ -48,14 +48,29 @@ function ManageGroup() {
       </p>
     );
   }
-  console.log(group);
-  console.log(members);
 
   function removeOneMember(index) {
+    const userToRemove = members[index];
+    let listOfGroups = userToRemove.groups_in;
+    const updatedGroupList = listOfGroups.filter((gid) => gid !== groupId);
+    const updatedUser = { ...userToRemove, groups_in: updatedGroupList };
+    const userUrl =
+      `${import.meta.env.VITE_API_BASE_URL}/users/` + userToRemove._id;
+    fetch(userUrl, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updatedUser),
+    }).catch((err) => {
+      console.log(err);
+    });
     const updatedMembers = members.filter((_, i) => i !== index);
-    const url = `${import.meta.env.VITE_API_BASE_URL}/groups/` + groupId;
+    const groupUrl = `${import.meta.env.VITE_API_BASE_URL}/groups/` + groupId;
     const updatedGroup = { ...group, members: updatedMembers };
-    fetch(url, {
+    listOfGroups = userToRemove.groups_in;
+    fetch(groupUrl, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
