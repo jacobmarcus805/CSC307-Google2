@@ -31,6 +31,7 @@ function updateUserById(id, update) {
 }
 
 function getUserSchedules(requesterId, targetId) {
+  console.log("getting user scheudles for", targetId, "by", requesterId);
   return new Promise((resolve, reject) => {
     userModel
       .findById(requesterId)
@@ -39,6 +40,11 @@ function getUserSchedules(requesterId, targetId) {
         if (!requester) {
           return reject(new Error("Requester user not found."));
         }
+
+        // Convert IDs to strings for accurate comparison
+        const requesterIdStr = requesterId.toString();
+        const targetIdStr = targetId.toString();
+
         if (!requester.is_admin && requesterId !== targetId) {
           return reject(
             new Error(
@@ -47,13 +53,13 @@ function getUserSchedules(requesterId, targetId) {
           );
         }
 
-        return userModel.findById(targetId).select("events");
+        return userModel.findById(targetId).select("schedule");
       })
       .then((target) => {
         if (!target) {
           return reject(new Error("Target user not found."));
         }
-        resolve(target.events);
+        resolve(target.schedule || []);
       })
       .catch((err) => {
         reject(err);
