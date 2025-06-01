@@ -13,15 +13,28 @@ import {
   AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
-  Heading,
 } from "@chakra-ui/react";
 import PropTypes from "prop-types";
 import React, { useRef, useState } from "react";
+import UserScheduleModal from "./userScheduleModal";
 
 const MembersTable = ({ memberData, removeMember }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef();
   const [selectedIndex, setSelectedIndex] = useState(null);
+
+  const [isOpenMod, setIsOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const openModal = (user) => {
+    setSelectedUser(user);
+    setIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsOpen(false);
+    setSelectedUser(null);
+  };
 
   const handleOpenDialog = (index) => {
     setSelectedIndex(index);
@@ -38,15 +51,13 @@ const MembersTable = ({ memberData, removeMember }) => {
 
   return (
     <>
-      <Heading as="h1" size="lg" mb={4} pl={4} pt={4} color="teal.600">
-        Group Members
-      </Heading>
       <Table variant="simple">
         <Thead>
-          <Tr>
-            <Th>Name</Th>
-            <Th>Email</Th>
-            <Th>Actions</Th>
+          <Tr bg="teal.600">
+            <Th color="white">Name</Th>
+            <Th color="white">Email</Th>
+            <Th color="white">View Schedule</Th>
+            <Th color="white">Remove</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -54,6 +65,15 @@ const MembersTable = ({ memberData, removeMember }) => {
             <Tr key={member._id}>
               <Td>{member.name}</Td>
               <Td>{member.email}</Td>
+              <Td>
+                <Button
+                  colorScheme="blue"
+                  size="sm"
+                  onClick={() => openModal(member)}
+                >
+                  Schedule
+                </Button>
+              </Td>
               <Td>
                 <Button
                   colorScheme="red"
@@ -67,6 +87,12 @@ const MembersTable = ({ memberData, removeMember }) => {
           ))}
         </Tbody>
       </Table>
+
+      <UserScheduleModal
+        user={selectedUser}
+        isOpen={isOpenMod}
+        onClose={closeModal}
+      />
 
       {/* Chakra AlertDialog rendered outside the table */}
       <AlertDialog
