@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import MembersTable from "../components/groups_components/membersTable";
+import FindSitter from "../components/groups_components/findSitter";
 import { useParams } from "react-router-dom";
+import { Heading } from "@chakra-ui/react";
+import AvailableUsers from "../components/groups_components/availableUsers";
 
 function ManageGroup() {
   const { userId, groupId } = useParams();
@@ -8,6 +11,7 @@ function ManageGroup() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [members, setMembers] = useState(null);
+  const [result, setResult] = useState(null);
   const token = localStorage.getItem("token");
   useEffect(() => {
     async function fetchGroup() {
@@ -92,9 +96,49 @@ function ManageGroup() {
       });
   }
 
+  function handleTimeSubmit(day, startTime, endTime) {
+    console.log("Received from form:", day, startTime, endTime);
+    const startSplit = startTime.split(":");
+    const endSplit = endTime.split(":");
+    const startMPM =
+      parseInt(startSplit[0], 10) * 60 + parseInt(startSplit[1], 10);
+    const endMPM = parseInt(endSplit[0], 10) * 60 + parseInt(endSplit[1], 10);
+    let availableSitters = [];
+    for (const member of members) {
+      let flag = true;
+      for (const event of member.schedule) {
+        if (!event.canSit) {
+          if (
+            (event.startTime > startMPM && event.startTime < endMPM) ||
+            (event.endTime > startMPM && event.endTime < endMPM) ||
+            (event.startTime < startMPM && event.endTime < endMPM)
+          ) {
+            flag = false;
+          }
+        }
+      }
+      if (flag) {
+        availableSitters.push(member);
+        console.log(member);
+      }
+    }
+    setResult(<AvailableUsers users={availableSitters} />);
+  }
+
   return (
     <div className="container">
+      <Heading as="h1" size="lg" mb={4} pl={4} pt={4} color="teal.600">
+        Group Members
+      </Heading>
       <MembersTable memberData={members} removeMember={removeOneMember} />
+      <Heading as="h1" size="lg" mb={4} pl={4} pt={4} color="teal.600">
+        Find a Sitter
+      </Heading>
+      <FindSitter onSubmit={handleTimeSubmit} />
+      <Heading as="h1" size="lg" mb={4} pl={4} pt={4} color="teal.600">
+        Available Sitters
+      </Heading>
+      {result && <div style={{ marginTop: 20 }}>{result}</div>}
     </div>
   );
 }
