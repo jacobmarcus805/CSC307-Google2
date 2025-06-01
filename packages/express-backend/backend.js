@@ -72,11 +72,13 @@ app.get("/users/:id", authFunctions.authenticateUser, (req, res) => {
     });
 });
 
-app.get("/users/:id/events", (req, res) => {
+app.get("/users/:id/events", authFunctions.authenticateUser, (req, res) => {
   userServices
-    .getUserSchedules(req.auth.userId, req.params.id)
+    .getUserSchedules(req.user.sub, req.params.id)
     .then((events) => {
-      res.json(events);
+      // log events
+      console.log("Events for user:", req.params.id, events || []);
+      res.json(events || []);
     })
     .catch((error) => {
       res.status(500).send("Internal server error");
