@@ -53,11 +53,11 @@ const MembersTable = ({ memberData, removeMember }) => {
     <>
       <Table variant="simple">
         <Thead>
-          <Tr bg="teal.600">
-            <Th color="white">Name</Th>
-            <Th color="white">Email</Th>
-            <Th color="white">View Schedule</Th>
-            <Th color="white">Remove</Th>
+          <Tr>
+            <Th>Name</Th>
+            <Th>Email</Th>
+            <Th>View Schedule</Th>
+            <Th>Remove</Th>
           </Tr>
         </Thead>
         <Tbody>
