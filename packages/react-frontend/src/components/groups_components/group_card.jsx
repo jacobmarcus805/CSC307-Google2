@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
   Icon,
@@ -18,6 +19,31 @@ import { FaUserCircle } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 
 function GroupCard({ group }) {
+  useEffect(() => {
+    const fetchGroup = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const userId = localStorage.getItem("userId");
+
+        if (!token) {
+          console.error("No token found in localStorage");
+          return;
+        }
+        const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+        // const fetchedGroup = await fetch(`${baseUrl}/groups/${groupId}`);
+
+        // const groupData = await fetchedGroup.json();
+
+        // console.log(groupData);
+      } catch (err) {
+        console.error("Error fetching group:", err);
+      }
+    };
+
+    fetchGroup();
+  });
+
   const listMembers = (members) => {
     return members.map((member, idx) => <p key={idx}>{member}</p>);
   };

@@ -1,7 +1,9 @@
 import React from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import GroupCard from "../components/groups_components/group_card";
 import { Heading, SimpleGrid } from "@chakra-ui/react";
+import { useParams } from "react-router-dom";
 
 const groups_data = [
   {
@@ -27,36 +29,78 @@ const groups_data = [
   },
 ];
 
-const ListGroups = ({ groups }) => {
-  return (
-    <SimpleGrid
-      columns={1} // Responsive columns: 2 on small screens, 3 on larger screens
-      spacing={"2em"}
-      spacingX={"2em"}
-      justifyItems={"center"}
-      alignItems={"center"}
-      justifyContent={"center"}
-      paddingBottom={"2em"}
-    >
-      {groups.map((group) => (
-        <GroupCard key={group.name} group={group} />
-      ))}
-    </SimpleGrid>
-  );
-};
-
-ListGroups.propTypes = {
-  groups: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      description: PropTypes.string.isRequired,
-      admins: PropTypes.arrayOf(PropTypes.string).isRequired,
-      members: PropTypes.arrayOf(PropTypes.string).isRequired,
-    }),
-  ).isRequired,
-};
-
 const Groups = () => {
+  const [groupsIn, setGroupsIn] = useState(groups_data);
+  const [groupsCreated, setGroupsCreated] = useState(groups_data);
+
+  const { userId } = useParams();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      // Fetch groups from the backend using userId
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No token found in localStorage");
+          return;
+        }
+
+        const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+        const response = await fetch(
+          `${baseUrl}/users/${userId}?authUserId=${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user");
+        }
+
+        const data = await response.json();
+
+        setGroupsCreated(data.groups_created);
+        setGroupsIn(data.groups_in);
+      } catch (err) {
+        console.error("Error fetching user:", err);
+      }
+    };
+
+    fetchUser();
+  }, [userId]);
+
+  const ListGroups = ({ groups }) => {
+    return (
+      <SimpleGrid
+        columns={1}
+        spacing={"2em"}
+        spacingX={"2em"}
+        justifyItems={"center"}
+        alignItems={"center"}
+        justifyContent={"center"}
+        paddingBottom={"2em"}
+      >
+        {groups.map((group) => (
+          <GroupCard key={group.name} group={group} />
+        ))}
+      </SimpleGrid>
+    );
+  };
+
+  ListGroups.propTypes = {
+    groups: PropTypes.arrayOf(
+      PropTypes.shape({
+        name: PropTypes.string.isRequired,
+        description: PropTypes.string.isRequired,
+        admins: PropTypes.arrayOf(PropTypes.string).isRequired,
+        members: PropTypes.arrayOf(PropTypes.string).isRequired,
+      }),
+    ).isRequired,
+  };
+
   return (
     <div>
       <Heading textAlign="center" padding={"1em"}>
