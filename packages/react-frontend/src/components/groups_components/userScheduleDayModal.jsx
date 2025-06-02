@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Calendar, dateFnsLocalizer } from "react-big-calendar";
+import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
 import format from "date-fns/format";
 import parse from "date-fns/parse";
 import getDay from "date-fns/getDay";
-import addDays from "date-fns/addDays";
 import startOfWeek from "date-fns/startOfWeek";
+import addDays from "date-fns/addDays";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import {
   Modal,
@@ -25,16 +25,6 @@ const locales = {
   "en-US": enUS,
 };
 
-const dayNames = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
-];
-
 const localizer = dateFnsLocalizer({
   format,
   parse,
@@ -43,70 +33,64 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-const eventStyleGetter = (event) => {
-  const backgroundColor = event.can_sit ? "green" : "red";
-
-  return {
-    style: {
-      backgroundColor,
-      borderRadius: "5px",
-      opacity: 0.8,
-      color: "white",
-      border: "0px",
-      display: "block",
-    },
-  };
-};
-
-const formats = {
-  dayFormat: (date) => {
-    const jsDay = date.getDay();
-    const dayIndex = jsDay === 0 ? 6 : jsDay - 1;
-    return (
-      dayNames[dayIndex].charAt(0).toUpperCase() + dayNames[dayIndex].slice(1)
-    );
+const eventStyleGetter = (event) => ({
+  style: {
+    backgroundColor: event.can_sit ? "green" : "red",
+    borderRadius: "5px",
+    opacity: 0.8,
+    color: "white",
+    border: "0px",
+    display: "block",
   },
-};
+});
 
 const formatAmPmFromMinutes = (minutes) => {
   const hours24 = Math.floor(minutes / 60);
   const mins = minutes % 60;
-
   const period = hours24 >= 12 ? "PM" : "AM";
   const hours12 = hours24 % 12 || 12;
-
   return `${hours12}:${mins.toString().padStart(2, "0")} ${period}`;
 };
 
-// Map string day name to date within current week
-const mapDayToDate = (day) => {
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const index = dayNames.indexOf(day.toLowerCase());
-  return addDays(weekStart, index);
+// Day string like "wednesday" to date in current week
+const getDateForDay = (dayString) => {
+  const days = [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+  ];
+  const index = days.indexOf(dayString.toLowerCase());
+  if (index === -1) return new Date();
+  const start = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday start
+  return addDays(start, index);
 };
 
-function UserScheduleModal({ user, isOpen, onClose }) {
+function UserScheduleModal({ user, isOpen, onClose, dayToShow }) {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
 
   if (!user) return null;
 
-  // Normalize events to one week
-  const userEvents = user.schedule.map((event) => {
-    const baseDate = mapDayToDate(event.day);
-    const start = new Date(baseDate);
-    start.setHours(0, event.start_time, 0, 0);
+  const targetDate = getDateForDay(dayToShow);
 
-    const end = new Date(baseDate);
-    end.setHours(0, event.end_time, 0, 0);
-
-    return {
-      ...event,
-      title: event.title || `${event.day} Block`,
-      start,
-      end,
-    };
-  });
+  const userEvents = user.schedule
+    .filter((e) => e.day.toLowerCase() === dayToShow.toLowerCase())
+    .map((event) => {
+      const start = new Date(targetDate);
+      start.setHours(0, event.start_time, 0, 0);
+      const end = new Date(targetDate);
+      end.setHours(0, event.end_time, 0, 0);
+      return {
+        ...event,
+        title: event.title || `${event.day} Block`,
+        start,
+        end,
+      };
+    });
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
@@ -118,8 +102,6 @@ function UserScheduleModal({ user, isOpen, onClose }) {
     setIsEventDetailsOpen(false);
   };
 
-  const referenceDate = startOfWeek(new Date(), { weekStartsOn: 1 });
-
   return (
     <>
       <Modal
@@ -130,27 +112,29 @@ function UserScheduleModal({ user, isOpen, onClose }) {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>{user.name}&apos;s Schedule</ModalHeader>
+          <ModalHeader>
+            {user.name}&apos;s{" "}
+            {dayToShow.charAt(0).toUpperCase() + dayToShow.slice(1)} Schedule
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody height="600px">
             {userEvents.length === 0 ? (
-              <Text>No events scheduled.</Text>
+              <Text>No events scheduled for {dayToShow}.</Text>
             ) : (
               <Calendar
                 localizer={localizer}
                 events={userEvents}
                 startAccessor="start"
                 endAccessor="end"
-                defaultView="week"
-                views={["week"]}
-                defaultDate={referenceDate}
-                min={new Date(referenceDate.setHours(8, 0, 0, 0))}
-                max={new Date(referenceDate.setHours(22, 0, 0, 0))}
+                defaultView={Views.DAY}
+                views={[Views.DAY]}
+                defaultDate={targetDate}
+                min={new Date(targetDate.setHours(8, 0, 0, 0))}
+                max={new Date(targetDate.setHours(22, 0, 0, 0))}
                 style={{ height: "100%" }}
                 onSelectEvent={handleSelectEvent}
                 eventPropGetter={eventStyleGetter}
-                formats={formats}
-                toolbar={false} // hides navigation
+                toolbar={false}
               />
             )}
           </ModalBody>
@@ -171,11 +155,6 @@ function UserScheduleModal({ user, isOpen, onClose }) {
                 <Heading size="md" mb={2}>
                   {selectedEvent.title}
                 </Heading>
-                <Text>
-                  <strong>Day:</strong>{" "}
-                  {selectedEvent.day.charAt(0).toUpperCase() +
-                    selectedEvent.day.slice(1)}
-                </Text>
                 <Text>
                   <strong>Start Time:</strong>{" "}
                   {formatAmPmFromMinutes(selectedEvent.start_time)}
@@ -212,6 +191,7 @@ function UserScheduleModal({ user, isOpen, onClose }) {
 UserScheduleModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
+  dayToShow: PropTypes.string.isRequired, // e.g. "wednesday"
   user: PropTypes.shape({
     name: PropTypes.string.isRequired,
     schedule: PropTypes.arrayOf(

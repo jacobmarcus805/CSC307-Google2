@@ -98,31 +98,52 @@ function ManageGroup() {
 
   function handleTimeSubmit(day, startTime, endTime) {
     console.log("Received from form:", day, startTime, endTime);
+    const dayOfWeek = day.toLowerCase();
     const startSplit = startTime.split(":");
     const endSplit = endTime.split(":");
     const startMPM =
       parseInt(startSplit[0], 10) * 60 + parseInt(startSplit[1], 10);
     const endMPM = parseInt(endSplit[0], 10) * 60 + parseInt(endSplit[1], 10);
+    if (startMPM >= endMPM) {
+      setResult(
+        <Heading as="h1" size="md" mb={4} pl={4} pt={4} color="red.600">
+          Start Time must be before End Time
+        </Heading>,
+      );
+      return;
+    }
     let availableSitters = [];
     for (const member of members) {
       let flag = true;
       for (const event of member.schedule) {
-        if (!event.canSit && event.day == day) {
+        if (!event.can_sit && event.day === dayOfWeek) {
+          console.log(event);
+          console.log(startMPM);
+          console.log(endMPM);
           if (
-            (event.startTime > startMPM && event.startTime < endMPM) ||
-            (event.endTime > startMPM && event.endTime < endMPM) ||
-            (event.startTime < startMPM && event.endTime < endMPM)
+            (event.start_time > startMPM && event.start_time < endMPM) ||
+            (event.end_time > startMPM && event.end_time < endMPM) ||
+            (event.start_time <= startMPM && event.end_time >= endMPM)
           ) {
+            console.log(
+              "1" + (event.start_time > startMPM && event.start_time < endMPM),
+            );
+            console.log(
+              "2" + (event.end_time > startMPM && event.end_time < endMPM),
+            );
+            console.log(
+              "3" + (event.start_time <= startMPM && event.end_time <= endMPM),
+            );
+
             flag = false;
           }
         }
       }
       if (flag) {
         availableSitters.push(member);
-        console.log(member);
       }
     }
-    setResult(<AvailableUsers users={availableSitters} />);
+    setResult(<AvailableUsers users={availableSitters} day={dayOfWeek} />);
   }
 
   return (
