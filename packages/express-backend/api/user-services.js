@@ -1,4 +1,5 @@
 import userModel from "../schemas/user.js";
+import { ObjectId } from "mongodb";
 
 function getUsers() {
   let promise;
@@ -67,6 +68,56 @@ function getUserSchedules(requesterId, targetId) {
   });
 }
 
+function addEventToUser(requesterId, targetId, eventData) {
+  console.log(
+    "Adding event to user",
+    targetId,
+    "by",
+    requesterId,
+    "with data: ",
+    eventData,
+  );
+
+  return new Promise((resolve, reject) => {
+    // Check permissions first
+    userModel
+      .findById(requesterId)
+      .select("is_admin")
+      .then((requester) => {
+        if (!requester) {
+          return reject(new Error("Requester user not found."));
+        }
+
+        const requesterIdStr = requesterId.toString();
+        const targetIdStr = targetId.toString();
+
+        if (!requester.is_admin && requesterIdStr !== targetIdStr) {
+          return reject(new Error("Permission denied"));
+        }
+
+        // Add the event to the user's schedule
+        return userModel.findByIdAndUpdate(
+          targetId,
+          { $push: { schedule: eventData } },
+          { new: true, runValidators: true },
+        );
+      })
+      .then((updatedUser) => {
+        if (!updatedUser) {
+          return reject(new Error("Target user not found."));
+        }
+
+        // Return the newly added event
+        const newEvent = updatedUser.schedule[updatedUser.schedule.length - 1];
+        resolve(newEvent);
+      })
+      .catch((err) => {
+        console.error("Error adding event to user:", err);
+        reject(err);
+      });
+  });
+}
+
 export default {
   addUser,
   getUsers,
@@ -75,4 +126,5 @@ export default {
   findUserByJob,
   updateUserById,
   getUserSchedules,
+  addEventToUser,
 };
