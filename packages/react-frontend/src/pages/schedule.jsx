@@ -348,45 +348,90 @@ function Schedule() {
     onOpen();
   };
 
-  const handleSaveEvent = () => {
-    console.log("Events before saving:", events);
+  const handleSaveEvent = async () => {
+    console.log("Saving new event:", newEvent);
 
     if (
       newEvent.title &&
       newEvent.day &&
       newEvent.start_time &&
       newEvent.end_time &&
-      newEvent.location
+      newEvent.location &&
+      newEvent.can_sit !== undefined
     ) {
-      // Recalculate start and end
-      const updatedEvent = {
-        ...newEvent,
-        start: minutesToDate(newEvent.day, newEvent.start_time),
-        end: minutesToDate(newEvent.day, newEvent.end_time),
-      };
+      try {
+        const token = localStorage.getItem("token");
+        const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-      let updatedEvents;
-      if (isEditMode) {
-        // Replace the original event with the updated event
-        updatedEvents = events.map((event) =>
-          event.id === updatedEvent.id ? updatedEvent : event,
-        );
-        setIsEditMode(false); // Reset edit mode
-      } else {
-        // Add a new event
-        updatedEvents = [...events, { ...updatedEvent, id: Date.now() }];
+        if (!token) {
+          alert("Authentication required. Please log in again.");
+          return;
+        }
+
+        // Prepare event data for the backend
+        const eventData = {
+          title: newEvent.title,
+          day: newEvent.day,
+          start_time: parseInt(newEvent.start_time),
+          end_time: parseInt(newEvent.end_time),
+          location: newEvent.location,
+          can_sit: newEvent.can_sit,
+        };
+
+        console.log("Sending event data to backend:", eventData);
+
+        // Create new event
+        const response = await fetch(`${baseUrl}/users/${userId}/events`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(eventData),
+        });
+
+        console.log("Backend response status:", response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Backend error:", errorText);
+          throw new Error(`Failed to create event: ${response.status}`);
+        }
+
+        const savedEvent = await response.json();
+        console.log("Event saved successfully:", savedEvent);
+
+        // Transform the saved event for the calendar
+        const calendarEvent = {
+          id: savedEvent._id || savedEvent.id,
+          title: savedEvent.title,
+          day: savedEvent.day,
+          start_time: savedEvent.start_time,
+          end_time: savedEvent.end_time,
+          location: savedEvent.location,
+          can_sit: savedEvent.can_sit,
+          start: minutesToDate(savedEvent.day, savedEvent.start_time),
+          end: minutesToDate(savedEvent.day, savedEvent.end_time),
+        };
+
+        // Add the new event to the existing events
+        const updatedEvents = [...events, calendarEvent];
+        setEvents(updatedEvents);
+
+        console.log("Updated Events:", updatedEvents);
+
+        onClose(); // Close modal
+
+        // Show success message
+        alert("Event created successfully!");
+      } catch (error) {
+        console.error("Error creating event:", error);
+        alert(`Error creating event: ${error.message}`);
       }
-
-      setEvents(updatedEvents);
-
-      console.log("Updated Events:", updatedEvents);
-
-      onClose(); // Close modal
     } else {
       alert("Please fill in all fields");
     }
   };
-
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
     onEventDetailsOpen();
