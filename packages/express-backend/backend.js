@@ -301,6 +301,25 @@ app.post("/events", (req, res) => {
     });
 });
 
+// Create a new event for a user
+app.post("/users/:id/events", authFunctions.authenticateUser, (req, res) => {
+  const userId = req.params.id;
+  const eventData = req.body;
+
+  console.log("Creating event for user:", userId, eventData);
+
+  userServices
+    .addEventToUser(req.user.sub, userId, eventData)
+    .then((result) => {
+      console.log("Event created successfully:", result);
+      res.status(201).json(result);
+    })
+    .catch((error) => {
+      console.error("Error creating event:", error);
+      res.status(500).json({ error: "Internal server error" });
+    });
+});
+
 app.get("/events", (req, res) => {
   const title = req.query.title;
 
