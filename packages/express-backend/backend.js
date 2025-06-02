@@ -72,11 +72,13 @@ app.get("/users/:id", authFunctions.authenticateUser, (req, res) => {
     });
 });
 
-app.get("/users/:id/events", (req, res) => {
+app.get("/users/:id/events", authFunctions.authenticateUser, (req, res) => {
   userServices
-    .getUserSchedules(req.auth.userId, req.params.id)
+    .getUserSchedules(req.user.sub, req.params.id)
     .then((events) => {
-      res.json(events);
+      // log events
+      console.log("Events for user:", req.params.id, events || []);
+      res.json(events || []);
     })
     .catch((error) => {
       res.status(500).send("Internal server error");
@@ -299,6 +301,25 @@ app.post("/events", (req, res) => {
     });
 });
 
+// Create a new event for a user
+app.post("/users/:id/events", authFunctions.authenticateUser, (req, res) => {
+  const userId = req.params.id;
+  const eventData = req.body;
+
+  console.log("Creating event for user:", userId, eventData);
+
+  userServices
+    .addEventToUser(req.user.sub, userId, eventData)
+    .then((result) => {
+      console.log("Event created successfully:", result);
+      res.status(201).json(result);
+    })
+    .catch((error) => {
+      console.error("Error creating event:", error);
+      res.status(500).json({ error: "Internal server error" });
+    });
+});
+
 app.get("/events", (req, res) => {
   const title = req.query.title;
 
@@ -369,6 +390,32 @@ app.delete("/events/:id", (req, res) => {
       res.status(500).send("Internal server error.");
     });
 });
+
+// Delete an event
+app.delete(
+  "/users/:id/events/:eventId",
+  authFunctions.authenticateUser,
+  (req, res) => {
+    const { id: userId, eventId } = req.params;
+
+    console.log("Deleting event:", eventId, "for user:", userId);
+
+    userServices
+      .deleteUserEvent(req.user.sub, userId, eventId)
+      .then((result) => {
+        if (result) {
+          console.log("Event deleted successfully");
+          res.status(204).send();
+        } else {
+          res.status(404).json({ error: "Event not found" });
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting event:", error);
+        res.status(500).json({ error: "Internal server error" });
+      });
+  },
+);
 
 // login route from auth TA 4
 app.post("/login", authFunctions.loginUser);

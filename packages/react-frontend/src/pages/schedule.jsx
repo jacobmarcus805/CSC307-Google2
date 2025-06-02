@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import format from "date-fns/format";
 import parse from "date-fns/parse";
@@ -61,14 +62,32 @@ const dayToIndex = (day) => {
 // Helper function to convert minutes since midnight to Date object
 const minutesToDate = (day, minutes) => {
   const dayIndex = typeof day === "string" ? dayToIndex(day) : day;
-  const mondayDate = customStartOfWeek(new Date());
-  const dayDate = addDays(mondayDate, dayIndex);
+
+  // Get the most recent previous Monday (or this Monday if today is Monday)
+  const today = new Date();
+  const todayDayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+  let daysToSubtract;
+  if (todayDayOfWeek === 0) {
+    // If today is Sunday
+    daysToSubtract = 6; // Go back to previous Monday
+  } else {
+    // Any other day
+    daysToSubtract = todayDayOfWeek - 1; // Go back to most recent Monday
+  }
+
+  const mostRecentMonday = new Date(today);
+  mostRecentMonday.setDate(today.getDate() - daysToSubtract);
+  mostRecentMonday.setHours(0, 0, 0, 0); // Reset to start of day
+
+  // Calculate the target day
+  const dayDate = addDays(mostRecentMonday, dayIndex);
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
+
   return new Date(dayDate.setHours(hours, mins, 0, 0));
 };
 
-// Mock event data
 const initialEvents = [
   {
     id: 1,
@@ -137,6 +156,102 @@ function Schedule() {
     onOpen: onEventDetailsOpen,
     onClose: onEventDetailsClose,
   } = useDisclosure();
+
+  // user id
+  const { userId } = useParams();
+  // loading and error states
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Add this near the top of your Schedule function
+  useEffect(() => {
+    // Calculate and log the start of the current week
+    const today = new Date();
+    const startOfWeek = customStartOfWeek(today);
+
+    console.log("Calendar week starts on:", startOfWeek.toDateString());
+
+    // Log each day of the week to help with debugging
+    const weekDays = dayNames.map((day, index) => {
+      const date = addDays(startOfWeek, index);
+      return {
+        day: day,
+        date: date.toDateString(),
+        isoDate: date.toISOString(),
+      };
+    });
+
+    console.log("Full week dates:", weekDays);
+
+    // Example event date calculations
+    const exampleEventTime = 600; // 10:00 AM
+    const exampleDate = minutesToDate("monday", exampleEventTime);
+    console.log(
+      "Example event on Monday at 10:00 AM:",
+      exampleDate.toDateString(),
+      exampleDate.toTimeString(),
+    );
+  }, []);
+
+  // Fetch events when component mounts
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoading(true);
+
+        // Get auth token from localStorage
+        const token = localStorage.getItem("token");
+
+        const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+        if (!token) {
+          setError("Authentication required");
+          setLoading(false);
+          return;
+        }
+
+        // Fetch events from the backend
+        const response = await fetch(
+          `${baseUrl}/users/${userId}/events?authUserId=${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch events");
+        }
+
+        const data = await response.json();
+
+        // Transform backend data to the format calendar expects
+        const transformedEvents = data.map((event, index) => ({
+          id: event._id || `event-${Date.now()}-${index}`,
+          title: event.title,
+          day: event.day,
+          start_time: event.start_time,
+          end_time: event.end_time,
+          location: event.location,
+          can_sit: event.can_sit,
+          start: minutesToDate(event.day, event.start_time),
+          end: minutesToDate(event.day, event.end_time),
+        }));
+
+        console.log("Fetched events:", transformedEvents);
+
+        setEvents(transformedEvents);
+      } catch (err) {
+        console.error("Error fetching events:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [userId]); // Re-fetch when userId changes
 
   const handleAddEvent = () => {
     const defaultStart = 540; // 9:00 AM
@@ -233,40 +348,129 @@ function Schedule() {
     onOpen();
   };
 
-  const handleSaveEvent = () => {
-    console.log("Events before saving:", events);
+  const handleSaveEvent = async () => {
+    console.log("Saving event:", newEvent);
+    console.log("Is Edit Mode:", isEditMode);
 
     if (
       newEvent.title &&
       newEvent.day &&
       newEvent.start_time &&
       newEvent.end_time &&
-      newEvent.location
+      newEvent.location &&
+      newEvent.can_sit !== undefined
     ) {
-      // Recalculate start and end
-      const updatedEvent = {
-        ...newEvent,
-        start: minutesToDate(newEvent.day, newEvent.start_time),
-        end: minutesToDate(newEvent.day, newEvent.end_time),
-      };
+      try {
+        const token = localStorage.getItem("token");
+        const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-      let updatedEvents;
-      if (isEditMode) {
-        // Replace the original event with the updated event
-        updatedEvents = events.map((event) =>
-          event.id === updatedEvent.id ? updatedEvent : event,
+        if (!token) {
+          alert("Authentication required. Please log in again.");
+          return;
+        }
+
+        // Prepare event data for the backend
+        const eventData = {
+          title: newEvent.title,
+          day: newEvent.day,
+          start_time: parseInt(newEvent.start_time),
+          end_time: parseInt(newEvent.end_time),
+          location: newEvent.location,
+          can_sit: newEvent.can_sit,
+        };
+
+        console.log("Sending event data to backend:", eventData);
+
+        // if edit mode, delete the old event first
+        if (isEditMode) {
+          console.log("Deleting old event:", newEvent.id);
+
+          const deleteResponse = await fetch(
+            `${baseUrl}/users/${userId}/events/${newEvent.id}`,
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            },
+          );
+
+          if (!deleteResponse.ok) {
+            const errorText = await deleteResponse.text();
+            console.error("Error deleting old event:", errorText);
+            throw new Error(
+              `Failed to delete old event: ${deleteResponse.status}`,
+            );
+          }
+
+          console.log("Old event deleted successfully");
+        }
+
+        // Create new event
+        const response = await fetch(`${baseUrl}/users/${userId}/events`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(eventData),
+        });
+
+        console.log("Backend response status:", response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Backend error:", errorText);
+          throw new Error(`Failed to create event: ${response.status}`);
+        }
+
+        const savedEvent = await response.json();
+        console.log(
+          `Event ${isEditMode ? "updated" : "created"} successfully:`,
+          savedEvent,
         );
-        setIsEditMode(false); // Reset edit mode
-      } else {
-        // Add a new event
-        updatedEvents = [...events, { ...updatedEvent, id: Date.now() }];
+
+        // Transform the saved event for the calendar
+        const calendarEvent = {
+          id: savedEvent._id || savedEvent.id,
+          title: savedEvent.title,
+          day: savedEvent.day,
+          start_time: savedEvent.start_time,
+          end_time: savedEvent.end_time,
+          location: savedEvent.location,
+          can_sit: savedEvent.can_sit,
+          start: minutesToDate(savedEvent.day, savedEvent.start_time),
+          end: minutesToDate(savedEvent.day, savedEvent.end_time),
+        };
+
+        let updatedEvents;
+        if (isEditMode) {
+          // Remove the old event and add the new one
+          updatedEvents = events.filter((event) => event.id !== newEvent.id);
+          updatedEvents = [...updatedEvents, calendarEvent];
+          setIsEditMode(false);
+        } else {
+          // Just add the new event
+          updatedEvents = [...events, calendarEvent];
+        }
+
+        setEvents(updatedEvents);
+        console.log("Updated Events:", updatedEvents);
+
+        onClose(); // Close modal
+
+        // Show success message
+        alert(`Event ${isEditMode ? "updated" : "created"} successfully!`);
+      } catch (error) {
+        console.error(
+          `Error ${isEditMode ? "updating" : "creating"} event:`,
+          error,
+        );
+        alert(
+          `Error ${isEditMode ? "updating" : "creating"} event: ${error.message}`,
+        );
       }
-
-      setEvents(updatedEvents);
-
-      console.log("Updated Events:", updatedEvents);
-
-      onClose(); // Close modal
     } else {
       alert("Please fill in all fields");
     }
@@ -277,10 +481,50 @@ function Schedule() {
     onEventDetailsOpen();
   };
 
-  const handleRemoveEvent = () => {
-    const updatedEvents = events.filter((e) => e.id !== selectedEvent.id);
-    setEvents(updatedEvents);
-    onEventDetailsClose();
+  const handleRemoveEvent = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+      if (!token) {
+        alert("Authentication required. Please log in again.");
+        return;
+      }
+
+      console.log("Deleting event:", selectedEvent.id);
+
+      // Call backend to delete the event
+      const response = await fetch(
+        `${baseUrl}/users/${userId}/events/${selectedEvent.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      console.log("Delete response status:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Backend error:", errorText);
+        throw new Error(`Failed to delete event: ${response.status}`);
+      }
+
+      // Remove from local state after successful backend deletion
+      const updatedEvents = events.filter((e) => e.id !== selectedEvent.id);
+      setEvents(updatedEvents);
+
+      console.log("Event deleted successfully, updated events:", updatedEvents);
+
+      onEventDetailsClose();
+      alert("Event deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      alert(`Error deleting event: ${error.message}`);
+    }
   };
 
   const eventStyleGetter = (event) => {
@@ -312,6 +556,13 @@ function Schedule() {
   return (
     <Box p={5}>
       <Heading mb={4}>Weekly Schedule</Heading>
+
+      {error && (
+        <Box mb={4} p={3} bg="red.100" color="red.700" borderRadius="md">
+          {error}
+        </Box>
+      )}
+
       <Button colorScheme="green" onClick={handleAddEvent} mb={4}>
         Add New Event
       </Button>
@@ -322,24 +573,38 @@ function Schedule() {
         borderRadius="md"
         p={2}
       >
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          style={{ height: "100%" }}
-          views={["week"]}
-          view="week"
-          formats={formats}
-          defaultView="week"
-          min={minutesToDate("monday", 480)} // Start at 8:00 AM
-          max={minutesToDate("monday", 1320)} // End at 10:00 PM
-          onSelectEvent={handleSelectEvent}
-          eventPropGetter={eventStyleGetter}
-          components={{
-            toolbar: CustomToolbar,
-          }}
-        />
+        {loading ? (
+          <Box
+            height="100%"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Text>Loading events...</Text>
+          </Box>
+        ) : (
+          (console.log("Events being passed to Calendar:", events),
+          (
+            <Calendar
+              localizer={localizer}
+              events={events}
+              startAccessor="start"
+              endAccessor="end"
+              style={{ height: "100%" }}
+              views={["week"]}
+              view="week"
+              formats={formats}
+              defaultView="week"
+              min={minutesToDate("monday", 480)}
+              max={minutesToDate("monday", 1320)}
+              onSelectEvent={handleSelectEvent}
+              eventPropGetter={eventStyleGetter}
+              components={{
+                toolbar: CustomToolbar,
+              }}
+            />
+          ))
+        )}
       </Box>
 
       {/* Modal for adding new events */}
