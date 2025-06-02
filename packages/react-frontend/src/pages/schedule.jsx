@@ -349,7 +349,8 @@ function Schedule() {
   };
 
   const handleSaveEvent = async () => {
-    console.log("Saving new event:", newEvent);
+    console.log("Saving event:", newEvent);
+    console.log("Is Edit Mode:", isEditMode);
 
     if (
       newEvent.title &&
@@ -380,6 +381,32 @@ function Schedule() {
 
         console.log("Sending event data to backend:", eventData);
 
+        // if edit mode, delete the old event first
+        if (isEditMode) {
+          console.log("Deleting old event:", newEvent.id);
+
+          const deleteResponse = await fetch(
+            `${baseUrl}/users/${userId}/events/${newEvent.id}`,
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            },
+          );
+
+          if (!deleteResponse.ok) {
+            const errorText = await deleteResponse.text();
+            console.error("Error deleting old event:", errorText);
+            throw new Error(
+              `Failed to delete old event: ${deleteResponse.status}`,
+            );
+          }
+
+          console.log("Old event deleted successfully");
+        }
+
         // Create new event
         const response = await fetch(`${baseUrl}/users/${userId}/events`, {
           method: "POST",
@@ -399,7 +426,10 @@ function Schedule() {
         }
 
         const savedEvent = await response.json();
-        console.log("Event saved successfully:", savedEvent);
+        console.log(
+          `Event ${isEditMode ? "updated" : "created"} successfully:`,
+          savedEvent,
+        );
 
         // Transform the saved event for the calendar
         const calendarEvent = {
@@ -414,24 +444,38 @@ function Schedule() {
           end: minutesToDate(savedEvent.day, savedEvent.end_time),
         };
 
-        // Add the new event to the existing events
-        const updatedEvents = [...events, calendarEvent];
-        setEvents(updatedEvents);
+        let updatedEvents;
+        if (isEditMode) {
+          // Remove the old event and add the new one
+          updatedEvents = events.filter((event) => event.id !== newEvent.id);
+          updatedEvents = [...updatedEvents, calendarEvent];
+          setIsEditMode(false);
+        } else {
+          // Just add the new event
+          updatedEvents = [...events, calendarEvent];
+        }
 
+        setEvents(updatedEvents);
         console.log("Updated Events:", updatedEvents);
 
         onClose(); // Close modal
 
         // Show success message
-        alert("Event created successfully!");
+        alert(`Event ${isEditMode ? "updated" : "created"} successfully!`);
       } catch (error) {
-        console.error("Error creating event:", error);
-        alert(`Error creating event: ${error.message}`);
+        console.error(
+          `Error ${isEditMode ? "updating" : "creating"} event:`,
+          error,
+        );
+        alert(
+          `Error ${isEditMode ? "updating" : "creating"} event: ${error.message}`,
+        );
       }
     } else {
       alert("Please fill in all fields");
     }
   };
+
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
     onEventDetailsOpen();
