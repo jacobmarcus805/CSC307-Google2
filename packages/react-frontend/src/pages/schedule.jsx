@@ -62,10 +62,29 @@ const dayToIndex = (day) => {
 // Helper function to convert minutes since midnight to Date object
 const minutesToDate = (day, minutes) => {
   const dayIndex = typeof day === "string" ? dayToIndex(day) : day;
-  const mondayDate = customStartOfWeek(new Date());
-  const dayDate = addDays(mondayDate, dayIndex);
+
+  // Get the most recent previous Monday (or this Monday if today is Monday)
+  const today = new Date();
+  const todayDayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+  let daysToSubtract;
+  if (todayDayOfWeek === 0) {
+    // If today is Sunday
+    daysToSubtract = 6; // Go back to previous Monday
+  } else {
+    // Any other day
+    daysToSubtract = todayDayOfWeek - 1; // Go back to most recent Monday
+  }
+
+  const mostRecentMonday = new Date(today);
+  mostRecentMonday.setDate(today.getDate() - daysToSubtract);
+  mostRecentMonday.setHours(0, 0, 0, 0); // Reset to start of day
+
+  // Calculate the target day
+  const dayDate = addDays(mostRecentMonday, dayIndex);
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
+
   return new Date(dayDate.setHours(hours, mins, 0, 0));
 };
 
