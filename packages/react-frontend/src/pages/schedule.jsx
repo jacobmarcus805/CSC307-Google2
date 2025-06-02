@@ -437,10 +437,50 @@ function Schedule() {
     onEventDetailsOpen();
   };
 
-  const handleRemoveEvent = () => {
-    const updatedEvents = events.filter((e) => e.id !== selectedEvent.id);
-    setEvents(updatedEvents);
-    onEventDetailsClose();
+  const handleRemoveEvent = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+      if (!token) {
+        alert("Authentication required. Please log in again.");
+        return;
+      }
+
+      console.log("Deleting event:", selectedEvent.id);
+
+      // Call backend to delete the event
+      const response = await fetch(
+        `${baseUrl}/users/${userId}/events/${selectedEvent.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      console.log("Delete response status:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Backend error:", errorText);
+        throw new Error(`Failed to delete event: ${response.status}`);
+      }
+
+      // Remove from local state after successful backend deletion
+      const updatedEvents = events.filter((e) => e.id !== selectedEvent.id);
+      setEvents(updatedEvents);
+
+      console.log("Event deleted successfully, updated events:", updatedEvents);
+
+      onEventDetailsClose();
+      alert("Event deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      alert(`Error deleting event: ${error.message}`);
+    }
   };
 
   const eventStyleGetter = (event) => {
