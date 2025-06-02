@@ -1,5 +1,4 @@
 import userModel from "../schemas/user.js";
-import { ObjectId } from "mongodb";
 
 function getUsers() {
   let promise;
@@ -41,10 +40,6 @@ function getUserSchedules(requesterId, targetId) {
         if (!requester) {
           return reject(new Error("Requester user not found."));
         }
-
-        // Convert IDs to strings for accurate comparison
-        const requesterIdStr = requesterId.toString();
-        const targetIdStr = targetId.toString();
 
         if (!requester.is_admin && requesterId !== targetId) {
           return reject(
