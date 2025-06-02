@@ -21,10 +21,10 @@ const AvailableUsers = ({ users }) => {
     <>
       <Table variant="simple" size="md" mt={4}>
         <Thead>
-          <Tr bg="teal.500">
-            <Th color="white">Name</Th>
-            <Th color="white">Email</Th>
-            <Th color="white">View Schedule</Th>
+          <Tr>
+            <Th>Name</Th>
+            <Th>Email</Th>
+            <Th>View Schedule</Th>
           </Tr>
         </Thead>
         <Tbody>

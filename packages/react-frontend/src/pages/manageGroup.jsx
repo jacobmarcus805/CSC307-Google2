@@ -107,7 +107,7 @@ function ManageGroup() {
     for (const member of members) {
       let flag = true;
       for (const event of member.schedule) {
-        if (!event.canSit) {
+        if (!event.canSit && event.day == day) {
           if (
             (event.startTime > startMPM && event.startTime < endMPM) ||
             (event.endTime > startMPM && event.endTime < endMPM) ||
@@ -127,15 +127,15 @@ function ManageGroup() {
 
   return (
     <div className="container">
-      <Heading as="h1" size="lg" mb={4} pl={4} pt={4} color="teal.600">
+      <Heading as="h1" size="lg" mb={4} pl={4} pt={4} color="green.600">
         Group Members
       </Heading>
       <MembersTable memberData={members} removeMember={removeOneMember} />
-      <Heading as="h1" size="lg" mb={4} pl={4} pt={4} color="teal.600">
+      <Heading as="h1" size="lg" mb={4} pl={4} pt={4} color="green.600">
         Find a Sitter
       </Heading>
       <FindSitter onSubmit={handleTimeSubmit} />
-      <Heading as="h1" size="lg" mb={4} pl={4} pt={4} color="teal.600">
+      <Heading as="h1" size="lg" mb={4} pl={4} pt={4} color="green.600">
         Available Sitters
       </Heading>
       {result && <div style={{ marginTop: 20 }}>{result}</div>}
