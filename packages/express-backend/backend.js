@@ -391,6 +391,32 @@ app.delete("/events/:id", (req, res) => {
     });
 });
 
+// Delete an event
+app.delete(
+  "/users/:id/events/:eventId",
+  authFunctions.authenticateUser,
+  (req, res) => {
+    const { id: userId, eventId } = req.params;
+
+    console.log("Deleting event:", eventId, "for user:", userId);
+
+    userServices
+      .deleteUserEvent(req.user.sub, userId, eventId)
+      .then((result) => {
+        if (result) {
+          console.log("Event deleted successfully");
+          res.status(204).send();
+        } else {
+          res.status(404).json({ error: "Event not found" });
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting event:", error);
+        res.status(500).json({ error: "Internal server error" });
+      });
+  },
+);
+
 // login route from auth TA 4
 app.post("/login", authFunctions.loginUser);
 app.post("/signup", authFunctions.registerUser);

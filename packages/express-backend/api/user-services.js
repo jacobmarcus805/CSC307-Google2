@@ -118,6 +118,55 @@ function addEventToUser(requesterId, targetId, eventData) {
   });
 }
 
+function deleteUserEvent(requesterId, targetId, eventId) {
+  console.log(
+    "Service: Deleting event",
+    eventId,
+    "for user",
+    targetId,
+    "by",
+    requesterId,
+  );
+  console.log("EventId type:", typeof eventId);
+  console.log("EventId value:", eventId);
+
+  return new Promise((resolve, reject) => {
+    userModel
+      .findById(requesterId)
+      .select("is_admin")
+      .then((requester) => {
+        if (!requester) {
+          return reject(new Error("Requester user not found."));
+        }
+
+        const requesterIdStr = requesterId.toString();
+        const targetIdStr = targetId.toString();
+
+        if (!requester.is_admin && requesterIdStr !== targetIdStr) {
+          return reject(new Error("Permission denied"));
+        }
+
+        return userModel.findByIdAndUpdate(
+          targetId,
+          { $pull: { schedule: { _id: eventId } } },
+          { new: true },
+        );
+      })
+      .then((updatedUser) => {
+        if (!updatedUser) {
+          return reject(new Error("User not found."));
+        }
+
+        console.log("Event deleted successfully from database");
+        resolve(true);
+      })
+      .catch((err) => {
+        console.error("Error deleting user event:", err);
+        reject(err);
+      });
+  });
+}
+
 export default {
   addUser,
   getUsers,
@@ -127,4 +176,5 @@ export default {
   updateUserById,
   getUserSchedules,
   addEventToUser,
+  deleteUserEvent,
 };
