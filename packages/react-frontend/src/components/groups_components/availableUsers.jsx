@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Table, Thead, Tbody, Tr, Th, Td, Button } from "@chakra-ui/react";
-import UserScheduleModal from "./userScheduleModal";
+import UserScheduleDayModal from "./userScheduleDayModal";
 import PropTypes from "prop-types";
 
-const AvailableUsers = ({ users }) => {
+const AvailableUsers = ({ users, day }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
@@ -47,10 +47,11 @@ const AvailableUsers = ({ users }) => {
       </Table>
 
       {selectedUser && (
-        <UserScheduleModal
+        <UserScheduleDayModal
           user={selectedUser}
           isOpen={isOpen}
           onClose={closeModal}
+          dayToShow={day}
         />
       )}
     </>
@@ -65,6 +66,7 @@ AvailableUsers.propTypes = {
       // Add more fields here if needed
     }),
   ).isRequired,
+  day: PropTypes.string.isRequired,
 };
 
 export default AvailableUsers;
