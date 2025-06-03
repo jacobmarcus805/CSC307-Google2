@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
@@ -14,6 +14,13 @@ import {
   Text,
   Button,
   Flex,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { FaUserCircle } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
@@ -21,6 +28,13 @@ import { FaUserGroup } from "react-icons/fa6";
 function GroupCard({ groupId, isGroupAdmin }) {
   const [group, setGroup] = useState();
   const [members, setMembers] = useState();
+  const [actionType, setActionType] = useState(""); // "leave" or "delete"
+  const cancelRef = useRef();
+  const {
+    isOpen: isConfirmOpen,
+    onOpen: openConfirm,
+    onClose: closeConfirm,
+  } = useDisclosure();
 
   //const { userId } = localStorage.getItem("userId");
 
@@ -83,6 +97,113 @@ function GroupCard({ groupId, isGroupAdmin }) {
     return <Text>Loading group...</Text>; // or a spinner
   }
 
+  const handleLeaveGroup = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+      if (!token || !userId) {
+        throw new Error("Missing token or userId");
+      }
+
+      // Filter out the leaving user from members list
+      const updatedMembers = members.filter((member) => member !== userId);
+
+      // Update group document on the backend
+      await fetch(`${baseUrl}/groups/${groupId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ members: updatedMembers }),
+      });
+
+      // Get the user
+      const response = await fetch(`${baseUrl}/users/${userId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Error fetching user");
+      }
+
+      const userData = await response.json();
+      const updatedGroupsIn = userData.groups_in.filter(
+        (group) => group !== groupId,
+      );
+
+      // Update user document
+      await fetch(`${baseUrl}/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ groups_in: updatedGroupsIn }),
+      });
+
+      // Update UI state
+      setMembers(updatedMembers);
+      closeConfirm();
+      window.location.reload();
+    } catch (err) {
+      console.error("Failed to leave group:", err);
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const userId = localStorage.getItem("userId");
+
+      const response = await fetch(`${baseUrl}/users/${userId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Error fetching user");
+      }
+
+      const userData = await response.json();
+      const updatedGroupsIn = userData.groups_in.filter(
+        (group) => group !== groupId,
+      );
+
+      // Update user document
+      await fetch(`${baseUrl}/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ groups_in: updatedGroupsIn }),
+      });
+
+      await fetch(`${baseUrl}/groups/${groupId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      closeConfirm();
+      window.location.reload();
+    } catch (err) {
+      console.error("Failed to delete group:", err);
+    }
+  };
+
   const listMembers = (members) => {
     return members.map((member, idx) => {
       return <p key={idx}>{member.name}</p>;
@@ -91,6 +212,40 @@ function GroupCard({ groupId, isGroupAdmin }) {
 
   return (
     <Card w="md" variant={"outline"} bg={"green.100"}>
+      <AlertDialog
+        isOpen={isConfirmOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={closeConfirm}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              {actionType === "delete" ? "Delete Group" : "Leave Group"}
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure you want to {actionType} this group? This action
+              cannot be undone.
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={closeConfirm}>
+                Cancel
+              </Button>
+              <Button
+                colorScheme={actionType === "delete" ? "red" : "orange"}
+                onClick={
+                  actionType === "delete" ? handleDeleteGroup : handleLeaveGroup
+                }
+                ml={3}
+              >
+                {actionType === "delete" ? "Delete" : "Leave"}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+
       <CardBody>
         <div
           style={{
@@ -132,11 +287,17 @@ function GroupCard({ groupId, isGroupAdmin }) {
             Group ID: {groupId}
           </Text>
         )}
-        <Flex placeContent={"flex-end"}>
-          <Button color={"red"} size={"sm"} variant={"ghost"}>
-            Leave
-          </Button>
-        </Flex>
+        <Button
+          colorScheme={isGroupAdmin ? "red" : "orange"}
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            setActionType(isGroupAdmin ? "delete" : "leave");
+            openConfirm();
+          }}
+        >
+          {isGroupAdmin ? "Delete" : "Leave"}
+        </Button>
       </CardBody>
     </Card>
   );

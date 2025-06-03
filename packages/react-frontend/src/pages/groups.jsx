@@ -28,6 +28,7 @@ const Groups = () => {
 
   const [groupsIn, setGroupsIn] = useState([]);
   const [groupsCreated, setGroupsCreated] = useState([]);
+  const [joinGroupId, setJoinGroupId] = useState("");
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDescription, setNewGroupDescription] = useState("");
 
@@ -84,8 +85,6 @@ const Groups = () => {
       }
 
       const userString = userId.toString();
-      const newAdmins = [userString];
-      const newMembers = [userString];
 
       const response = await fetch(`${baseUrl}/groups`, {
         method: "POST",
@@ -96,8 +95,8 @@ const Groups = () => {
         body: JSON.stringify({
           name: newGroupName,
           description: newGroupDescription,
-          admins: newAdmins,
-          members: newMembers,
+          admins: [userString],
+          members: [userString],
         }),
       });
 
@@ -116,6 +115,7 @@ const Groups = () => {
 
       // Add the new group to the list of created groups
       setGroupsCreated((prev) => [...prev, newGroup._id]); // or `newGroup` if you're storing full group objects
+      setGroupsIn((prev) => [...prev, newGroup._id]);
 
       // Reset fields and close modal
       setNewGroupName("");
@@ -123,6 +123,77 @@ const Groups = () => {
       onClose();
     } catch (err) {
       console.error("Error creating group:", err);
+    }
+  };
+
+  const handleJoinGroup = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+      if (!token || !userId || !joinGroupId) {
+        console.error("Missing input or token");
+        return;
+      }
+
+      // 1. Fetch group
+      const groupRes = await fetch(`${baseUrl}/groups/${joinGroupId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!groupRes.ok) {
+        throw new Error("Group not found");
+      }
+
+      const groupData = await groupRes.json();
+      const updatedMembers = groupData.members.includes(userId)
+        ? groupData.members
+        : [...groupData.members, userId];
+
+      // 2. Patch group with updated members
+      await fetch(`${baseUrl}/groups/${joinGroupId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ members: updatedMembers }),
+      });
+
+      // 3. Fetch user
+      const userRes = await fetch(`${baseUrl}/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!userRes.ok) {
+        throw new Error("User not found");
+      }
+
+      const userData = await userRes.json();
+      const updatedGroupsIn = userData.groups_in.includes(joinGroupId)
+        ? userData.groups_in
+        : [...userData.groups_in, joinGroupId];
+
+      // 4. Patch user with updated groups_in
+      await fetch(`${baseUrl}/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ groups_in: updatedGroupsIn }),
+      });
+
+      // 5. Update UI
+      setGroupsIn((prev) => [...prev, joinGroupId]);
+      setJoinGroupId("");
+    } catch (err) {
+      console.error("Failed to join group:", err);
     }
   };
 
@@ -194,6 +265,18 @@ const Groups = () => {
           <Heading textAlign="center" padding={"1em"}>
             Groups You're In
           </Heading>
+          <Box textAlign="center" mb={4}>
+            <Input
+              placeholder="Enter Group ID"
+              value={joinGroupId}
+              onChange={(e) => setJoinGroupId(e.target.value)}
+              width="60%"
+              mb={2}
+            />
+            <Button colorScheme="blue" onClick={handleJoinGroup}>
+              Join Group
+            </Button>
+          </Box>
           <ListGroups groups={groupsIn} />
         </Box>
         <Box>
