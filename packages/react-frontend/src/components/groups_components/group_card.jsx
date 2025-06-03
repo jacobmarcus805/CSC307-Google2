@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import {
   Icon,
@@ -22,6 +22,7 @@ import {
 } from "@chakra-ui/react";
 import { FaUserCircle } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
+import { AuthContext } from "../../contexts/AuthContext";
 
 function GroupCard({ groupId, isGroupAdmin }) {
   const [group, setGroup] = useState();
@@ -33,8 +34,7 @@ function GroupCard({ groupId, isGroupAdmin }) {
     onOpen: openConfirm,
     onClose: closeConfirm,
   } = useDisclosure();
-
-  //const { userId } = localStorage.getItem("userId");
+  const { userId } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchGroup = async () => {
@@ -68,8 +68,6 @@ function GroupCard({ groupId, isGroupAdmin }) {
           return;
         }
 
-        const userId = localStorage.getItem("userId");
-
         const memberPromises = group.members.map((memberId) =>
           fetch(`${baseUrl}/users/${memberId}?authUserId=${userId}`, {
             headers: {
@@ -98,7 +96,6 @@ function GroupCard({ groupId, isGroupAdmin }) {
   const handleLeaveGroup = async () => {
     try {
       const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
       if (!token || !userId) {
@@ -159,7 +156,6 @@ function GroupCard({ groupId, isGroupAdmin }) {
     try {
       const token = localStorage.getItem("token");
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
-      const userId = localStorage.getItem("userId");
 
       const response = await fetch(`${baseUrl}/users/${userId}`, {
         method: "GET",
@@ -303,6 +299,7 @@ function GroupCard({ groupId, isGroupAdmin }) {
 
 GroupCard.propTypes = {
   groupId: PropTypes.string.isRequired,
+  isGroupAdmin: PropTypes.bool,
 };
 
 export default GroupCard;

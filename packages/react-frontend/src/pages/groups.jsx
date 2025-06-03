@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
   Heading,
@@ -18,19 +18,19 @@ import {
   ModalCloseButton,
   useDisclosure,
 } from "@chakra-ui/react";
-import { useParams } from "react-router-dom";
+import { AuthContext } from "../contexts/AuthContext";
 import GroupCard from "../components/groups_components/group_card";
 
 const Groups = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-
   const [groupsIn, setGroupsIn] = useState([]);
   const [groupsCreated, setGroupsCreated] = useState([]);
   const [joinGroupId, setJoinGroupId] = useState("");
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDescription, setNewGroupDescription] = useState("");
+  const { userId } = useContext(AuthContext);
 
-  const { userId } = useParams();
+  console.log("uid: " + userId);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -74,7 +74,6 @@ const Groups = () => {
   const handleCreateGroup = async () => {
     try {
       const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
       if (!token) {
@@ -82,7 +81,7 @@ const Groups = () => {
         return;
       }
 
-      const userString = userId.toString();
+      console.log("uid: " + userId);
 
       const response = await fetch(`${baseUrl}/groups`, {
         method: "POST",
@@ -93,8 +92,8 @@ const Groups = () => {
         body: JSON.stringify({
           name: newGroupName,
           description: newGroupDescription,
-          admins: [userString],
-          members: [userString],
+          admins: [userId],
+          members: [userId],
         }),
       });
 
@@ -109,12 +108,34 @@ const Groups = () => {
         throw new Error("Invalid or empty JSON returned");
       }
 
+      const userRes = await fetch(`${baseUrl}/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!userRes.ok) {
+        throw new Error("User not found");
+      }
+      const userData = await userRes.json();
+
+      const updatedGroupsCreated = userData.groups_in.includes(newGroup._id)
+        ? userData.groups_in
+        : [...userData.groups_in, newGroup._id];
+
+      await fetch(`${baseUrl}/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ groups_created: updatedGroupsCreated }),
+      });
+
       console.log("Created group:", newGroup);
 
-      // Add the new group to the list of created groups
-      setGroupsCreated((prev) => [...prev, newGroup._id]); // or `newGroup` if you're storing full group objects
+      setGroupsCreated((prev) => [...prev, newGroup._id]);
 
-      // Reset fields and close modal
       setNewGroupName("");
       setNewGroupDescription("");
       onClose();
@@ -126,7 +147,6 @@ const Groups = () => {
   const handleJoinGroup = async () => {
     try {
       const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
       if (!token || !userId || !joinGroupId) {
@@ -217,6 +237,7 @@ const Groups = () => {
 
   ListGroups.propTypes = {
     groups: PropTypes.arrayOf(PropTypes.string).isRequired,
+    isGroupAdmin: PropTypes.bool,
   };
 
   const createGroupModal = (
@@ -260,7 +281,7 @@ const Groups = () => {
       <SimpleGrid columns={2} justifyItems={"center"}>
         <Box>
           <Heading textAlign="center" padding={"1em"}>
-            Groups You're In
+            Groups You&apos;re In
           </Heading>
           <Box textAlign="center" mb={4}>
             <Input
@@ -278,7 +299,7 @@ const Groups = () => {
         </Box>
         <Box>
           <Heading textAlign={"center"} padding={"1em"}>
-            Groups You've Created
+            Groups You&apos;ve Created
           </Heading>
           <Box justifySelf={"center"}>
             {createGroupModal}
