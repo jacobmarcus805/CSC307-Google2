@@ -18,7 +18,7 @@ import {
 import { FaUserCircle } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 
-function GroupCard({ groupId }) {
+function GroupCard({ groupId, isGroupAdmin }) {
   const [group, setGroup] = useState();
   const [members, setMembers] = useState();
 
@@ -127,6 +127,11 @@ function GroupCard({ groupId }) {
             </AccordionPanel>
           </AccordionItem>
         </Accordion>
+        {isGroupAdmin && (
+          <Text fontSize="sm" color="gray.600">
+            Group ID: {groupId}
+          </Text>
+        )}
         <Flex placeContent={"flex-end"}>
           <Button color={"red"} size={"sm"} variant={"ghost"}>
             Leave

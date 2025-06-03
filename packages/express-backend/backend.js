@@ -171,8 +171,8 @@ app.post("/groups", (req, res) => {
   console.log("Adding group:", groupToAdd);
   groupServices
     .addGroup(groupToAdd)
-    .then(() => {
-      res.status(201).send();
+    .then((createdGroup) => {
+      res.status(201).send(createdGroup);
     })
     .catch((error) => {
       res.status(500).send("Internal server error.");
