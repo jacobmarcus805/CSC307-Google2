@@ -78,7 +78,7 @@ function Signup() {
       }
 
       const data = await response.json();
-      login(data.token); // ← persist the token
+      login(data.token);
 
       console.log("User created successfully:", data);
 
