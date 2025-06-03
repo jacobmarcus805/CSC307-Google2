@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import {
   Icon,
@@ -13,17 +13,238 @@ import {
   Text,
   Button,
   Flex,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { FaUserCircle } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 
-function GroupCard({ group }) {
+function GroupCard({ groupId, isGroupAdmin }) {
+  const [group, setGroup] = useState();
+  const [members, setMembers] = useState();
+  const [actionType, setActionType] = useState(""); // "leave" or "delete"
+  const cancelRef = useRef();
+  const {
+    isOpen: isConfirmOpen,
+    onOpen: openConfirm,
+    onClose: closeConfirm,
+  } = useDisclosure();
+
+  //const { userId } = localStorage.getItem("userId");
+
+  useEffect(() => {
+    const fetchGroup = async () => {
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+        const fetchedGroup = await fetch(`${baseUrl}/groups/${groupId}`);
+
+        const groupData = await fetchedGroup.json();
+
+        console.log("fetched group data", groupData);
+        setGroup(groupData);
+      } catch (err) {
+        console.error("Error fetching group:", err);
+      }
+    };
+
+    fetchGroup();
+  }, [groupId]);
+
+  useEffect(() => {
+    if (!group || !group.members) return; // wait for group data
+
+    const fetchMembers = async () => {
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No token found in localStorage");
+          return;
+        }
+
+        const userId = localStorage.getItem("userId");
+
+        const memberPromises = group.members.map((memberId) =>
+          fetch(`${baseUrl}/users/${memberId}?authUserId=${userId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }).then((res) => {
+            if (!res.ok) throw new Error(`Failed to fetch member ${memberId}`);
+            return res.json();
+          }),
+        );
+
+        const membersData = await Promise.all(memberPromises);
+        setMembers(membersData);
+      } catch (err) {
+        console.error("Failed fetching members:", err);
+      }
+    };
+
+    fetchMembers();
+  }, [group]);
+
+  if (!group) {
+    return <Text>Loading group...</Text>; // or a spinner
+  }
+
+  const handleLeaveGroup = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+      if (!token || !userId) {
+        throw new Error("Missing token or userId");
+      }
+
+      // Filter out the leaving user from members list
+      const updatedMembers = members.filter((member) => member !== userId);
+
+      // Update group document on the backend
+      await fetch(`${baseUrl}/groups/${groupId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ members: updatedMembers }),
+      });
+
+      // Get the user
+      const response = await fetch(`${baseUrl}/users/${userId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Error fetching user");
+      }
+
+      const userData = await response.json();
+      const updatedGroupsIn = userData.groups_in.filter(
+        (group) => group !== groupId,
+      );
+
+      // Update user document
+      await fetch(`${baseUrl}/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ groups_in: updatedGroupsIn }),
+      });
+
+      // Update UI state
+      setMembers(updatedMembers);
+      closeConfirm();
+      window.location.reload();
+    } catch (err) {
+      console.error("Failed to leave group:", err);
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const userId = localStorage.getItem("userId");
+
+      const response = await fetch(`${baseUrl}/users/${userId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Error fetching user");
+      }
+
+      const userData = await response.json();
+      const updatedGroupsIn = userData.groups_in.filter(
+        (group) => group !== groupId,
+      );
+
+      // Update user document
+      await fetch(`${baseUrl}/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ groups_in: updatedGroupsIn }),
+      });
+
+      await fetch(`${baseUrl}/groups/${groupId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      closeConfirm();
+      window.location.reload();
+    } catch (err) {
+      console.error("Failed to delete group:", err);
+    }
+  };
+
   const listMembers = (members) => {
-    return members.map((member, idx) => <p key={idx}>{member}</p>);
+    return members.map((member, idx) => {
+      return <p key={idx}>{member.name}</p>;
+    });
   };
 
   return (
     <Card w="md" variant={"outline"} bg={"green.100"}>
+      <AlertDialog
+        isOpen={isConfirmOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={closeConfirm}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              {actionType === "delete" ? "Delete Group" : "Leave Group"}
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure you want to {actionType} this group? This action
+              cannot be undone.
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={closeConfirm}>
+                Cancel
+              </Button>
+              <Button
+                colorScheme={actionType === "delete" ? "red" : "orange"}
+                onClick={
+                  actionType === "delete" ? handleDeleteGroup : handleLeaveGroup
+                }
+                ml={3}
+              >
+                {actionType === "delete" ? "Delete" : "Leave"}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+
       <CardBody>
         <div
           style={{
@@ -55,25 +276,34 @@ function GroupCard({ group }) {
               </Text>
               <AccordionIcon />
             </AccordionButton>
-            <AccordionPanel>{listMembers(group.members)}</AccordionPanel>
+            <AccordionPanel>
+              {members ? listMembers(members) : <Text>Loading members...</Text>}
+            </AccordionPanel>
           </AccordionItem>
         </Accordion>
-        <Flex placeContent={"flex-end"}>
-          <Button color={"red"} size={"sm"} variant={"ghost"}>
-            Leave
-          </Button>
-        </Flex>
+        {isGroupAdmin && (
+          <Text fontSize="sm" color="gray.600">
+            Group ID: {groupId}
+          </Text>
+        )}
+        <Button
+          colorScheme={isGroupAdmin ? "red" : "orange"}
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            setActionType(isGroupAdmin ? "delete" : "leave");
+            openConfirm();
+          }}
+        >
+          {isGroupAdmin ? "Delete" : "Leave"}
+        </Button>
       </CardBody>
     </Card>
   );
 }
 
 GroupCard.propTypes = {
-  group: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    members: PropTypes.arrayOf(PropTypes.string).isRequired,
-  }).isRequired,
+  groupId: PropTypes.string.isRequired,
 };
 
 export default GroupCard;
