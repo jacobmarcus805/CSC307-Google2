@@ -115,7 +115,6 @@ const Groups = () => {
 
       // Add the new group to the list of created groups
       setGroupsCreated((prev) => [...prev, newGroup._id]); // or `newGroup` if you're storing full group objects
-      setGroupsIn((prev) => [...prev, newGroup._id]);
 
       // Reset fields and close modal
       setNewGroupName("");
