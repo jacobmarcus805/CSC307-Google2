@@ -2,10 +2,11 @@ import React from "react";
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import GroupCard from "../components/groups_components/group_card";
-import { Heading, SimpleGrid } from "@chakra-ui/react";
+import { Heading, Box, SimpleGrid } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
+import GroupCard2 from "../components/groups_components/group_card2";
 
-const groups_data = [
+const groups_data1 = [
   {
     name: "Cal Poly Guide Dogs",
     description:
@@ -29,9 +30,26 @@ const groups_data = [
   },
 ];
 
+const groups_data2 = [
+  {
+    name: "Cal Poly Guide Dogs",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed volutpat ante ac sem consectetur convallis nec eget enim. Nullam volutpat tortor a eleifend scelerisque. Curabitur urna est, rutrum vel velit ut, gravida mattis mi. Fusce sagittis velit id odio mattis dignissim. Donec at varius elit.",
+    admins: ["id1", "id2"],
+    members: ["id3", "id4"],
+  },
+  {
+    name: "SLO Guide Dogs",
+    description:
+      "Nunc nec velit ut libero vestibulum sodales at at tortor. In eleifend turpis ut volutpat egestas. Ut quis nisi est. Nulla nisl turpis, euismod ac lacus in, luctus aliquet sem.",
+    admins: ["id5", "id6"],
+    members: ["id7", "id8"],
+  },
+];
+
 const Groups = () => {
-  const [groupsIn, setGroupsIn] = useState(groups_data);
-  const [groupsCreated, setGroupsCreated] = useState(groups_data);
+  const [groupsIn, setGroupsIn] = useState([]);
+  const [groupsCreated, setGroupsCreated] = useState([]);
 
   const { userId } = useParams();
 
@@ -62,6 +80,8 @@ const Groups = () => {
 
         const data = await response.json();
 
+        console.log("data:", data);
+
         setGroupsCreated(data.groups_created);
         setGroupsIn(data.groups_in);
       } catch (err) {
@@ -73,6 +93,7 @@ const Groups = () => {
   }, [userId]);
 
   const ListGroups = ({ groups }) => {
+    console.log("Groups to be listed:", groups);
     return (
       <SimpleGrid
         columns={1}
@@ -83,30 +104,35 @@ const Groups = () => {
         justifyContent={"center"}
         paddingBottom={"2em"}
       >
-        {groups.map((group) => (
-          <GroupCard key={group.name} group={group} />
+        {groups.map((groupId, idx) => (
+          <Box key={idx} width={"100%"}>
+            <GroupCard2 groupId={groupId} />
+          </Box>
         ))}
       </SimpleGrid>
     );
   };
 
   ListGroups.propTypes = {
-    groups: PropTypes.arrayOf(
-      PropTypes.shape({
-        name: PropTypes.string.isRequired,
-        description: PropTypes.string.isRequired,
-        admins: PropTypes.arrayOf(PropTypes.string).isRequired,
-        members: PropTypes.arrayOf(PropTypes.string).isRequired,
-      }),
-    ).isRequired,
+    groups: PropTypes.arrayOf(PropTypes.string).isRequired,
   };
 
   return (
     <div>
-      <Heading textAlign="center" padding={"1em"}>
-        Your Groups
-      </Heading>
-      <ListGroups groups={groups_data} />
+      <SimpleGrid columns={2} justifyItems={"center"}>
+        <Box>
+          <Heading textAlign="center" padding={"1em"}>
+            Groups You're In
+          </Heading>
+          <ListGroups groups={groupsIn} />
+        </Box>
+        <Box>
+          <Heading textAlign={"center"} padding={"1em"}>
+            Groups You've Created
+          </Heading>
+          <ListGroups groups={groupsCreated} />
+        </Box>
+      </SimpleGrid>
     </div>
   );
 };
