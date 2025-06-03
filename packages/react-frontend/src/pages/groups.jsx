@@ -1,51 +1,9 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import GroupCard from "../components/groups_components/group_card";
 import { Heading, Box, SimpleGrid } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
-import GroupCard2 from "../components/groups_components/group_card2";
-
-const groups_data1 = [
-  {
-    name: "Cal Poly Guide Dogs",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed volutpat ante ac sem consectetur convallis nec eget enim. Nullam volutpat tortor a eleifend scelerisque. Curabitur urna est, rutrum vel velit ut, gravida mattis mi. Fusce sagittis velit id odio mattis dignissim. Donec at varius elit.",
-    admins: ["id1", "id2"],
-    members: ["id3", "id4"],
-  },
-  {
-    name: "SLO Guide Dogs",
-    description:
-      "Nunc nec velit ut libero vestibulum sodales at at tortor. In eleifend turpis ut volutpat egestas. Ut quis nisi est. Nulla nisl turpis, euismod ac lacus in, luctus aliquet sem.",
-    admins: ["id5", "id6"],
-    members: ["id7", "id8"],
-  },
-  {
-    name: "California Guide Dogs",
-    description:
-      "Quisque vel consequat ipsum, eget interdum dui. Suspendisse tristique, nisl vitae aliquet consectetur, enim metus eleifend metus, eu consectetur lacus felis at justo.",
-    admins: ["id9"],
-    members: ["id10"],
-  },
-];
-
-const groups_data2 = [
-  {
-    name: "Cal Poly Guide Dogs",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed volutpat ante ac sem consectetur convallis nec eget enim. Nullam volutpat tortor a eleifend scelerisque. Curabitur urna est, rutrum vel velit ut, gravida mattis mi. Fusce sagittis velit id odio mattis dignissim. Donec at varius elit.",
-    admins: ["id1", "id2"],
-    members: ["id3", "id4"],
-  },
-  {
-    name: "SLO Guide Dogs",
-    description:
-      "Nunc nec velit ut libero vestibulum sodales at at tortor. In eleifend turpis ut volutpat egestas. Ut quis nisi est. Nulla nisl turpis, euismod ac lacus in, luctus aliquet sem.",
-    admins: ["id5", "id6"],
-    members: ["id7", "id8"],
-  },
-];
+import GroupCard from "../components/groups_components/group_card";
 
 const Groups = () => {
   const [groupsIn, setGroupsIn] = useState([]);
@@ -106,7 +64,7 @@ const Groups = () => {
       >
         {groups.map((groupId, idx) => (
           <Box key={idx} width={"100%"}>
-            <GroupCard2 groupId={groupId} />
+            <GroupCard groupId={groupId} />
           </Box>
         ))}
       </SimpleGrid>

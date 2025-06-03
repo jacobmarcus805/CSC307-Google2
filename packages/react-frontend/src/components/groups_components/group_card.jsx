@@ -18,34 +18,75 @@ import {
 import { FaUserCircle } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 
-function GroupCard({ group }) {
+function GroupCard({ groupId }) {
+  const [group, setGroup] = useState();
+  const [members, setMembers] = useState();
+
+  //const { userId } = localStorage.getItem("userId");
+
   useEffect(() => {
     const fetchGroup = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const userId = localStorage.getItem("userId");
-
-        if (!token) {
-          console.error("No token found in localStorage");
-          return;
-        }
         const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-        // const fetchedGroup = await fetch(`${baseUrl}/groups/${groupId}`);
+        const fetchedGroup = await fetch(`${baseUrl}/groups/${groupId}`);
 
-        // const groupData = await fetchedGroup.json();
+        const groupData = await fetchedGroup.json();
 
-        // console.log(groupData);
+        console.log("fetched group data", groupData);
+        setGroup(groupData);
       } catch (err) {
         console.error("Error fetching group:", err);
       }
     };
 
     fetchGroup();
-  });
+  }, [groupId]);
+
+  useEffect(() => {
+    if (!group || !group.members) return; // wait for group data
+
+    const fetchMembers = async () => {
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No token found in localStorage");
+          return;
+        }
+
+        const userId = localStorage.getItem("userId");
+
+        const memberPromises = group.members.map((memberId) =>
+          fetch(`${baseUrl}/users/${memberId}?authUserId=${userId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }).then((res) => {
+            if (!res.ok) throw new Error(`Failed to fetch member ${memberId}`);
+            return res.json();
+          }),
+        );
+
+        const membersData = await Promise.all(memberPromises);
+        setMembers(membersData);
+      } catch (err) {
+        console.error("Failed fetching members:", err);
+      }
+    };
+
+    fetchMembers();
+  }, [group]);
+
+  if (!group) {
+    return <Text>Loading group...</Text>; // or a spinner
+  }
 
   const listMembers = (members) => {
-    return members.map((member, idx) => <p key={idx}>{member}</p>);
+    return members.map((member, idx) => {
+      return <p key={idx}>{member.name}</p>;
+    });
   };
 
   return (
@@ -81,7 +122,9 @@ function GroupCard({ group }) {
               </Text>
               <AccordionIcon />
             </AccordionButton>
-            <AccordionPanel>{listMembers(group.members)}</AccordionPanel>
+            <AccordionPanel>
+              {members ? listMembers(members) : <Text>Loading members...</Text>}
+            </AccordionPanel>
           </AccordionItem>
         </Accordion>
         <Flex placeContent={"flex-end"}>
@@ -95,11 +138,7 @@ function GroupCard({ group }) {
 }
 
 GroupCard.propTypes = {
-  group: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    members: PropTypes.arrayOf(PropTypes.string).isRequired,
-  }).isRequired,
+  groupId: PropTypes.string.isRequired,
 };
 
 export default GroupCard;
