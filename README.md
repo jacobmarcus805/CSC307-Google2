@@ -14,11 +14,16 @@ This website serves as a scheduling management tool for the Cal Poly Puppy Raise
 5. Click the link that shows up in the terminal, and open it in a new browser.
 
 ### Team
-
 Travis Biehle - travissbiehle@gmail.com  
 Nolan Knievel  
 Jacob Marcus  
 Josh Frendberg  
+
+## Stack
+Frontend: [React](https://react.dev/) and [ChakraUI](https://chakra-ui.com/)  
+Backend: [Express.js](https://expressjs.com/) (API) and [Node.js](https://nodejs.org/en)  
+Database: [MongoDB](https://www.mongodb.com/) with [MongoDB Atlas](https://www.mongodb.com/atlas) Cloud Hosting
+
 
 #### Contributing:
 Please use the AirBNB React/Javascript styleguide when making contributions
