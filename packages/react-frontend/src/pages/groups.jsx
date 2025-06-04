@@ -30,8 +30,6 @@ const Groups = () => {
   const [newGroupDescription, setNewGroupDescription] = useState("");
   const { userId } = useContext(AuthContext);
 
-  console.log("uid: " + userId);
-
   useEffect(() => {
     const fetchUser = async () => {
       // Fetch groups from the backend using userId
@@ -59,7 +57,7 @@ const Groups = () => {
 
         const data = await response.json();
 
-        console.log("data:", data);
+        //console.log("data:", data);
 
         setGroupsCreated(data.groups_created);
         setGroupsIn(data.groups_in);
@@ -80,8 +78,6 @@ const Groups = () => {
         console.error("No token found");
         return;
       }
-
-      console.log("uid: " + userId);
 
       const response = await fetch(`${baseUrl}/groups`, {
         method: "POST",
@@ -118,10 +114,11 @@ const Groups = () => {
         throw new Error("User not found");
       }
       const userData = await userRes.json();
-
-      const updatedGroupsCreated = userData.groups_in.includes(newGroup._id)
-        ? userData.groups_in
-        : [...userData.groups_in, newGroup._id];
+      const updatedGroupsCreated = userData.groups_created.includes(
+        newGroup._id,
+      )
+        ? userData.groups_created
+        : [...userData.groups_created, newGroup._id];
 
       await fetch(`${baseUrl}/users/${userId}`, {
         method: "PATCH",
@@ -214,8 +211,12 @@ const Groups = () => {
     }
   };
 
+  const handleGroupDeleted = (deletedGroupId) => {
+    setGroupsCreated((prev) => prev.filter((id) => id !== deletedGroupId));
+  };
+
   const ListGroups = ({ groups, isGroupAdmin = false }) => {
-    console.log("Groups to be listed:", groups);
+    //console.log("Groups to be listed:", groups);
     return (
       <SimpleGrid
         columns={1}
@@ -228,7 +229,11 @@ const Groups = () => {
       >
         {groups.map((groupId, idx) => (
           <Box key={idx} width={"100%"}>
-            <GroupCard groupId={groupId} isGroupAdmin={isGroupAdmin} />
+            <GroupCard
+              groupId={groupId}
+              isGroupAdmin={isGroupAdmin}
+              onDelete={handleGroupDeleted}
+            />
           </Box>
         ))}
       </SimpleGrid>

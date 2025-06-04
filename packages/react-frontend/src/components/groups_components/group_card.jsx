@@ -24,7 +24,7 @@ import { FaUserCircle } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import { AuthContext } from "../../contexts/AuthContext";
 
-function GroupCard({ groupId, isGroupAdmin }) {
+function GroupCard({ groupId, isGroupAdmin, onDelete }) {
   const [group, setGroup] = useState();
   const [members, setMembers] = useState();
   const [actionType, setActionType] = useState(""); // "leave" or "delete"
@@ -45,7 +45,7 @@ function GroupCard({ groupId, isGroupAdmin }) {
 
         const groupData = await fetchedGroup.json();
 
-        console.log("fetched group data", groupData);
+        //console.log("fetched group data", groupData);
         setGroup(groupData);
       } catch (err) {
         console.error("Error fetching group:", err);
@@ -157,20 +157,22 @@ function GroupCard({ groupId, isGroupAdmin }) {
       const token = localStorage.getItem("token");
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-      const response = await fetch(`${baseUrl}/users/${userId}`, {
-        method: "GET",
+      await fetch(`${baseUrl}/groups/${groupId}`, {
+        method: "DELETE",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) {
-        throw new Error("Error fetching user");
-      }
+      const response = await fetch(`${baseUrl}/users/${userId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const userData = await response.json();
-      const updatedGroupsIn = userData.groups_in.filter(
+      const updatedGroupsCreated = userData.groups_created.filter(
         (group) => group !== groupId,
       );
 
@@ -181,18 +183,13 @@ function GroupCard({ groupId, isGroupAdmin }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ groups_in: updatedGroupsIn }),
-      });
-
-      await fetch(`${baseUrl}/groups/${groupId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        body: JSON.stringify({ groups_created: updatedGroupsCreated }),
       });
 
       closeConfirm();
-      window.location.reload();
+      if (onDelete) {
+        onDelete(groupId); // notify parent to remove this group card
+      }
     } catch (err) {
       console.error("Failed to delete group:", err);
     }
@@ -300,6 +297,7 @@ function GroupCard({ groupId, isGroupAdmin }) {
 GroupCard.propTypes = {
   groupId: PropTypes.string.isRequired,
   isGroupAdmin: PropTypes.bool,
+  onDelete: PropTypes.func,
 };
 
 export default GroupCard;
