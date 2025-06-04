@@ -156,35 +156,69 @@ function GroupCard({ groupId, isGroupAdmin, onDelete }) {
     try {
       const token = localStorage.getItem("token");
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
-
-      await fetch(`${baseUrl}/groups/${groupId}`, {
+      const deleteResponse = await fetch(`${baseUrl}/groups/${groupId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      const response = await fetch(`${baseUrl}/users/${userId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      if (!deleteResponse.ok) {
+        const errorText = await deleteResponse.text();
+        throw new Error(
+          `Failed to delete group: ${deleteResponse.status} - ${errorText}`,
+        );
+      }
 
-      const userData = await response.json();
-      const updatedGroupsCreated = userData.groups_created.filter(
-        (group) => group !== groupId,
-      );
+      for (const user of members) {
+        let uId = user._id;
+        const response = await fetch(`${baseUrl}/users/${uId}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      // Update user document
-      await fetch(`${baseUrl}/users/${userId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ groups_created: updatedGroupsCreated }),
-      });
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Failed to delete group:", errorText);
+          throw new Error(
+            `Failed to delete group: ${response.status} - ${errorText}`,
+          );
+        }
+
+        const userData = await response.json();
+        if (group.admins.includes(uId)) {
+          const updatedGroupsCreated = userData.groups_created.filter(
+            (g) => g !== groupId,
+          );
+
+          // Update user document
+          await fetch(`${baseUrl}/users/${uId}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ groups_created: updatedGroupsCreated }),
+          });
+        } else {
+          console.log(user);
+          const updatedGroupsIn = userData.groups_in.filter(
+            (g) => g !== groupId,
+          );
+
+          // Update user document
+          await fetch(`${baseUrl}/users/${uId}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ groups_in: updatedGroupsIn }),
+          });
+        }
+      }
 
       closeConfirm();
       if (onDelete) {
