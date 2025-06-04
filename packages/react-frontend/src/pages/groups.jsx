@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
   Heading,
@@ -8,8 +8,6 @@ import {
   Button,
   FormControl,
   FormLabel,
-  FormErrorMessage,
-  FormHelperText,
   Input,
   Modal,
   ModalOverlay,
@@ -20,19 +18,17 @@ import {
   ModalCloseButton,
   useDisclosure,
 } from "@chakra-ui/react";
-import { useParams } from "react-router-dom";
+import { AuthContext } from "../contexts/AuthContext";
 import GroupCard from "../components/groups_components/group_card";
 
 const Groups = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-
   const [groupsIn, setGroupsIn] = useState([]);
   const [groupsCreated, setGroupsCreated] = useState([]);
   const [joinGroupId, setJoinGroupId] = useState("");
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDescription, setNewGroupDescription] = useState("");
-
-  const { userId } = useParams();
+  const { userId } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -61,7 +57,7 @@ const Groups = () => {
 
         const data = await response.json();
 
-        console.log("data:", data);
+        //console.log("data:", data);
 
         setGroupsCreated(data.groups_created);
         setGroupsIn(data.groups_in);
@@ -76,15 +72,12 @@ const Groups = () => {
   const handleCreateGroup = async () => {
     try {
       const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
       if (!token) {
         console.error("No token found");
         return;
       }
-
-      const userString = userId.toString();
 
       const response = await fetch(`${baseUrl}/groups`, {
         method: "POST",
@@ -95,8 +88,8 @@ const Groups = () => {
         body: JSON.stringify({
           name: newGroupName,
           description: newGroupDescription,
-          admins: [userString],
-          members: [userString],
+          admins: [userId],
+          members: [userId],
         }),
       });
 
@@ -111,12 +104,35 @@ const Groups = () => {
         throw new Error("Invalid or empty JSON returned");
       }
 
+      const userRes = await fetch(`${baseUrl}/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!userRes.ok) {
+        throw new Error("User not found");
+      }
+      const userData = await userRes.json();
+      const updatedGroupsCreated = userData.groups_created.includes(
+        newGroup._id,
+      )
+        ? userData.groups_created
+        : [...userData.groups_created, newGroup._id];
+
+      await fetch(`${baseUrl}/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ groups_created: updatedGroupsCreated }),
+      });
+
       console.log("Created group:", newGroup);
 
-      // Add the new group to the list of created groups
-      setGroupsCreated((prev) => [...prev, newGroup._id]); // or `newGroup` if you're storing full group objects
+      setGroupsCreated((prev) => [...prev, newGroup._id]);
 
-      // Reset fields and close modal
       setNewGroupName("");
       setNewGroupDescription("");
       onClose();
@@ -128,7 +144,6 @@ const Groups = () => {
   const handleJoinGroup = async () => {
     try {
       const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
       if (!token || !userId || !joinGroupId) {
@@ -196,8 +211,12 @@ const Groups = () => {
     }
   };
 
+  const handleGroupDeleted = (deletedGroupId) => {
+    setGroupsCreated((prev) => prev.filter((id) => id !== deletedGroupId));
+  };
+
   const ListGroups = ({ groups, isGroupAdmin = false }) => {
-    console.log("Groups to be listed:", groups);
+    //console.log("Groups to be listed:", groups);
     return (
       <SimpleGrid
         columns={1}
@@ -210,7 +229,11 @@ const Groups = () => {
       >
         {groups.map((groupId, idx) => (
           <Box key={idx} width={"100%"}>
-            <GroupCard groupId={groupId} isGroupAdmin={isGroupAdmin} />
+            <GroupCard
+              groupId={groupId}
+              isGroupAdmin={isGroupAdmin}
+              onDelete={handleGroupDeleted}
+            />
           </Box>
         ))}
       </SimpleGrid>
@@ -219,6 +242,7 @@ const Groups = () => {
 
   ListGroups.propTypes = {
     groups: PropTypes.arrayOf(PropTypes.string).isRequired,
+    isGroupAdmin: PropTypes.bool,
   };
 
   const createGroupModal = (
@@ -262,7 +286,7 @@ const Groups = () => {
       <SimpleGrid columns={2} justifyItems={"center"}>
         <Box>
           <Heading textAlign="center" padding={"1em"}>
-            Groups You're In
+            Groups You&apos;re In
           </Heading>
           <Box textAlign="center" mb={4}>
             <Input
@@ -280,7 +304,7 @@ const Groups = () => {
         </Box>
         <Box>
           <Heading textAlign={"center"} padding={"1em"}>
-            Groups You've Created
+            Groups You&apos;ve Created
           </Heading>
           <Box justifySelf={"center"}>
             {createGroupModal}

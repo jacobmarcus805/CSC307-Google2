@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import {
   Icon,
@@ -12,7 +12,6 @@ import {
   Heading,
   Text,
   Button,
-  Flex,
   AlertDialog,
   AlertDialogBody,
   AlertDialogFooter,
@@ -23,8 +22,9 @@ import {
 } from "@chakra-ui/react";
 import { FaUserCircle } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
+import { AuthContext } from "../../contexts/AuthContext";
 
-function GroupCard({ groupId, isGroupAdmin }) {
+function GroupCard({ groupId, isGroupAdmin, onDelete }) {
   const [group, setGroup] = useState();
   const [members, setMembers] = useState();
   const [actionType, setActionType] = useState(""); // "leave" or "delete"
@@ -34,8 +34,7 @@ function GroupCard({ groupId, isGroupAdmin }) {
     onOpen: openConfirm,
     onClose: closeConfirm,
   } = useDisclosure();
-
-  //const { userId } = localStorage.getItem("userId");
+  const { userId } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchGroup = async () => {
@@ -46,7 +45,7 @@ function GroupCard({ groupId, isGroupAdmin }) {
 
         const groupData = await fetchedGroup.json();
 
-        console.log("fetched group data", groupData);
+        //console.log("fetched group data", groupData);
         setGroup(groupData);
       } catch (err) {
         console.error("Error fetching group:", err);
@@ -68,8 +67,6 @@ function GroupCard({ groupId, isGroupAdmin }) {
           console.error("No token found in localStorage");
           return;
         }
-
-        const userId = localStorage.getItem("userId");
 
         const memberPromises = group.members.map((memberId) =>
           fetch(`${baseUrl}/users/${memberId}?authUserId=${userId}`, {
@@ -99,7 +96,6 @@ function GroupCard({ groupId, isGroupAdmin }) {
   const handleLeaveGroup = async () => {
     try {
       const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
       if (!token || !userId) {
@@ -160,44 +156,74 @@ function GroupCard({ groupId, isGroupAdmin }) {
     try {
       const token = localStorage.getItem("token");
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
-      const userId = localStorage.getItem("userId");
-
-      const response = await fetch(`${baseUrl}/users/${userId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Error fetching user");
-      }
-
-      const userData = await response.json();
-      const updatedGroupsIn = userData.groups_in.filter(
-        (group) => group !== groupId,
-      );
-
-      // Update user document
-      await fetch(`${baseUrl}/users/${userId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ groups_in: updatedGroupsIn }),
-      });
-
-      await fetch(`${baseUrl}/groups/${groupId}`, {
+      const deleteResponse = await fetch(`${baseUrl}/groups/${groupId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
+      if (!deleteResponse.ok) {
+        const errorText = await deleteResponse.text();
+        throw new Error(
+          `Failed to delete group: ${deleteResponse.status} - ${errorText}`,
+        );
+      }
+
+      for (const user of members) {
+        let uId = user._id;
+        const response = await fetch(`${baseUrl}/users/${uId}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Failed to delete group:", errorText);
+          throw new Error(
+            `Failed to delete group: ${response.status} - ${errorText}`,
+          );
+        }
+
+        const userData = await response.json();
+        if (group.admins.includes(uId)) {
+          const updatedGroupsCreated = userData.groups_created.filter(
+            (g) => g !== groupId,
+          );
+
+          // Update user document
+          await fetch(`${baseUrl}/users/${uId}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ groups_created: updatedGroupsCreated }),
+          });
+        } else {
+          console.log(user);
+          const updatedGroupsIn = userData.groups_in.filter(
+            (g) => g !== groupId,
+          );
+
+          // Update user document
+          await fetch(`${baseUrl}/users/${uId}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ groups_in: updatedGroupsIn }),
+          });
+        }
+      }
+
       closeConfirm();
-      window.location.reload();
+      if (onDelete) {
+        onDelete(groupId); // notify parent to remove this group card
+      }
     } catch (err) {
       console.error("Failed to delete group:", err);
     }
@@ -304,6 +330,8 @@ function GroupCard({ groupId, isGroupAdmin }) {
 
 GroupCard.propTypes = {
   groupId: PropTypes.string.isRequired,
+  isGroupAdmin: PropTypes.bool,
+  onDelete: PropTypes.func,
 };
 
 export default GroupCard;
