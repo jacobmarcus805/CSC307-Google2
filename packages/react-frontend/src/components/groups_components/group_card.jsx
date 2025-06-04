@@ -333,14 +333,16 @@ function GroupCard({ groupId, isGroupAdmin, onDelete }) {
             {isGroupAdmin ? "Delete" : "Leave"}
           </Button>
 
-          <Button
-            colorScheme="blue"
-            color="white"
-            size="sm"
-            onClick={() => navigate(`/${userId}/groups/${groupId}`)}
-          >
-            Manage Group
-          </Button>
+          {isGroupAdmin && (
+            <Button
+              colorScheme="blue"
+              color="white"
+              size="sm"
+              onClick={() => navigate(`/${userId}/groups/${groupId}`)}
+            >
+              Manage Group
+            </Button>
+          )}
         </Box>
       </CardBody>
     </Card>
