@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
   Icon,
@@ -7,6 +8,7 @@ import {
   AccordionIcon,
   AccordionPanel,
   AccordionItem,
+  Box,
   Card,
   CardBody,
   Heading,
@@ -29,6 +31,7 @@ function GroupCard({ groupId, isGroupAdmin, onDelete }) {
   const [members, setMembers] = useState();
   const [actionType, setActionType] = useState(""); // "leave" or "delete"
   const cancelRef = useRef();
+  const navigate = useNavigate();
   const {
     isOpen: isConfirmOpen,
     onOpen: openConfirm,
@@ -312,17 +315,33 @@ function GroupCard({ groupId, isGroupAdmin, onDelete }) {
             Group ID: {groupId}
           </Text>
         )}
-        <Button
-          colorScheme={isGroupAdmin ? "red" : "orange"}
-          size="sm"
-          variant="ghost"
-          onClick={() => {
-            setActionType(isGroupAdmin ? "delete" : "leave");
-            openConfirm();
-          }}
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mt={4}
         >
-          {isGroupAdmin ? "Delete" : "Leave"}
-        </Button>
+          <Button
+            colorScheme={isGroupAdmin ? "red" : "orange"}
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setActionType(isGroupAdmin ? "delete" : "leave");
+              openConfirm();
+            }}
+          >
+            {isGroupAdmin ? "Delete" : "Leave"}
+          </Button>
+
+          <Button
+            colorScheme="blue"
+            color="white"
+            size="sm"
+            onClick={() => navigate(`/${userId}/groups/${groupId}`)}
+          >
+            Manage Group
+          </Button>
+        </Box>
       </CardBody>
     </Card>
   );
