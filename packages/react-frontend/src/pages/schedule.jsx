@@ -461,7 +461,7 @@ function Schedule() {
         onClose(); // Close modal
 
         // Show success message
-        alert(`Event ${isEditMode ? "updated" : "created"} successfully!`);
+        //alert(`Event ${isEditMode ? "updated" : "created"} successfully!`);
       } catch (error) {
         console.error(
           `Error ${isEditMode ? "updating" : "creating"} event:`,
